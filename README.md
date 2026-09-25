@@ -77,7 +77,7 @@
 ### Running Locally
 ```bash
 # 1. Clone repository
-git clone https://github.com/your-org/alphaind-trading-desk.git
+git clone https://github.com/ashfakcodes/alphaind-trading-desk
 cd alphaind-trading-desk
 
 # 2. Install dependencies
@@ -95,7 +95,6 @@ python run.py
 docker compose up -d --build
 ```
 * **Trading Desk UI:** `http://localhost:3000`
-* **Backend REST API & OpenAPI Docs:** `http://localhost:8000/docs`
 * **Backend REST API & OpenAPI Docs:** `http://localhost:8000/docs`
 
 ---
@@ -339,46 +338,6 @@ BITGET_API_KEY=
 BITGET_API_SECRET=
 BITGET_API_PASSPHRASE=
 ```
-
----
-
-## 🌐 Production Cloud Deployment Guide
-
-Alphaind is built with a decoupled architecture ready for immediate deployment on modern cloud platforms:
-
-```
-┌────────────────────────────────────────────────────────┐
-│                   FRONTEND SERVICE                     │
-│  Host: Vercel / Netlify (https://alphaind.vercel.app)  │
-│  - Static SPA (HTML5, CSS3, Vanilla ES6+ JavaScript)   │
-│  - Dynamic API Base URL resolution (config.js)         │
-│  - Zero UI Popups/Modals — 100% Background Routing     │
-└──────────────────────────┬─────────────────────────────┘
-                           │ HTTPS / REST (CORS enabled)
-                           ▼
-┌────────────────────────────────────────────────────────┐
-│                    BACKEND SERVICE                     │
-│  Host: Render / Fly.io / Railway / Docker              │
-│  - FastAPI + Uvicorn ASGI Server                       │
-│  - 7 Risk & Defense Pillars + Multi-Agent Orchestrator │
-│  - Live Bitget v2 REST Market Data (Cached 3s)         │
-│  - Health Check Probes (/health & /api/health)         │
-└────────────────────────────────────────────────────────┘
-```
-
-### Deploying Backend to Render
-1. Push the repository to GitHub.
-2. Go to [Render Dashboard](https://dashboard.render.com) → **New +** → **Blueprint** (detects `render.yaml`).
-3. Set environment variables (`BITGET_IS_SIMULATION=true`, `BITGET_QWEN_API_KEY`, etc.).
-4. Click **Create Web Service** to receive your public endpoint (e.g. `https://alphaind-backend.onrender.com`).
-
-### Deploying Frontend to Vercel
-1. Import the repository into [Vercel Dashboard](https://vercel.com/new).
-2. Set **Root Directory** to `frontend`.
-3. Add Environment Variable: `VITE_API_URL=https://alphaind-backend.onrender.com`.
-4. Click **Deploy**.
-
-> **Dynamic API Endpoint Override:** You can deep-link to any backend instance by passing `?api=https://your-backend.com` in the URL.
 
 ---
 

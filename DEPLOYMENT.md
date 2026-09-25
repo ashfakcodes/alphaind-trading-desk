@@ -26,10 +26,10 @@ This guide details the streamlined deployment of **Alphaind - AI Trading Desk** 
 
 ## 🚀 Step 1: Deploy Backend to Render
 
-1. Push your repository to GitHub.
+1. Ensure your repository is pushed to GitHub: [`https://github.com/ashfakcodes/alphaind-trading-desk`](https://github.com/ashfakcodes/alphaind-trading-desk).
 2. Go to the [Render Dashboard](https://dashboard.render.com).
-3. Click **New +** → **Blueprint** and select your repository (it will automatically detect `render.yaml`).
-   * *Alternatively:* Click **New +** → **Web Service** → Connect your repository:
+3. Click **New +** → **Blueprint** and select `alphaind-trading-desk` (it will automatically detect `render.yaml`).
+   * *Alternatively:* Click **New +** → **Web Service** → Connect `ashfakcodes/alphaind-trading-desk`:
      * **Name**: `alphaind-backend`
      * **Environment**: `Python 3`
      * **Build Command**: `pip install -r requirements.txt`
@@ -54,7 +54,7 @@ This guide details the streamlined deployment of **Alphaind - AI Trading Desk** 
 ## ⚡ Step 2: Deploy Frontend to Vercel
 
 1. Go to [Vercel Dashboard](https://vercel.com/new).
-2. Import your GitHub repository.
+2. Import `https://github.com/ashfakcodes/alphaind-trading-desk`.
 3. In **Project Configuration**:
    * **Framework Preset**: `Other`
    * **Root Directory**: `frontend`

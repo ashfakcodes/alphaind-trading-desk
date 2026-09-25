@@ -8,6 +8,7 @@
 
 * **Selected Track:** **Track 3 — AI Trading Desk**
 * **Named Sub-Theme:** **Execution Assistance** (Primary) with **Decision Stress Testing** (Deep Supporting Pillar).
+* **Public GitHub Repository:** [`https://github.com/ashfakcodes/alphaind-trading-desk`](https://github.com/ashfakcodes/alphaind-trading-desk)
 * **One-Line Product Summary:**
   > Natural-language pre-trade research workbench and execution assistant for retail traders mixing crypto perps and 7×24 rTokens ($2k–$20k equity, 3–15x leverage), transforming unstructured trade ideas into institutional-grade research briefs and calibrated safe execution tickets.
 * **Target User Segment:**
@@ -141,10 +142,11 @@ The desk includes 4 canonical interactive demo scenarios accessible via top HUD 
 
 ```bash
 # 1. Clone & Install
-cd "d:/development/Bitget Hackathon Project"
+git clone https://github.com/ashfakcodes/alphaind-trading-desk
+cd alphaind-trading-desk
 pip install -r requirements.txt
 
-# 2. Run Automated Verification (46 tests pass)
+# 2. Run Automated Verification (73 tests pass)
 pytest -v
 
 # 3. Launch the Trading Desk

@@ -22,5 +22,10 @@
     "quant"
   ],
   "author": "Alphaind Team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ashfakcodes/alphaind-trading-desk.git"
+  },
+  "homepage": "https://github.com/ashfakcodes/alphaind-trading-desk#readme",
   "license": "MIT"
 }
