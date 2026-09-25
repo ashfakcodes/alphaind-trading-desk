@@ -18,17 +18,14 @@
       ]
     }
   ],
-  "rewrites": [
-    { "source": "/", "destination": "/frontend/landing.html" },
-    { "source": "/landing", "destination": "/frontend/landing.html" },
-    { "source": "/landing.html", "destination": "/frontend/landing.html" },
-    { "source": "/desk", "destination": "/frontend/index.html" },
-    { "source": "/desk.html", "destination": "/frontend/index.html" },
-    { "source": "/index.html", "destination": "/frontend/index.html" },
-    { "source": "/auth", "destination": "/frontend/auth.html" },
-    { "source": "/auth.html", "destination": "/frontend/auth.html" },
-    { "source": "/css/:path*", "destination": "/frontend/css/:path*" },
-    { "source": "/js/:path*", "destination": "/frontend/js/:path*" },
-    { "source": "/src/:path*", "destination": "/frontend/src/:path*" }
+  "routes": [
+    { "src": "/landing", "dest": "/frontend/landing.html" },
+    { "src": "/desk", "dest": "/frontend/index.html" },
+    { "src": "/auth", "dest": "/frontend/auth.html" },
+    { "src": "/css/(.*)", "dest": "/frontend/css/$1" },
+    { "src": "/js/(.*)", "dest": "/frontend/js/$1" },
+    { "src": "/src/(.*)", "dest": "/frontend/src/$1" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/frontend/index.html" }
   ]
 }
