@@ -1,5 +1,4 @@
 {
-  "version": 2,
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
@@ -18,11 +17,9 @@
       ]
     }
   ],
-  "routes": [
-    { "src": "/landing", "dest": "/index.html" },
-    { "src": "/desk", "dest": "/desk.html" },
-    { "src": "/auth", "dest": "/auth.html" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/landing", "destination": "/index.html" },
+    { "source": "/desk", "destination": "/desk.html" },
+    { "source": "/auth", "destination": "/auth.html" }
   ]
 }
