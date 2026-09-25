@@ -1652,8 +1652,8 @@ async function initOAuthAndVault() {
   const hasSelectedPaper = localStorage.getItem('alphaind_paper_selected') === 'true';
 
   if (!hasLiveAccount && !hasSelectedPaper && !hasDemo) {
-    window.location.replace('/');
-    return;
+    localStorage.setItem('alphaind_paper_selected', 'true');
+    activeMode = 'paper';
   }
 
   // 4. Immediately render verified user mode in UI and URL without waiting for network hops

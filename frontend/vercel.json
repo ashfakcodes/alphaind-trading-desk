@@ -18,13 +18,10 @@
       ]
     }
   ],
-  "routes": [
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+  "rewrites": [
+    { "source": "/", "destination": "/landing.html" },
+    { "source": "/landing", "destination": "/landing.html" },
+    { "source": "/desk", "destination": "/index.html" },
+    { "source": "/auth", "destination": "/auth.html" }
   ]
 }

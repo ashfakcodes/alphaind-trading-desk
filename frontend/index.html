@@ -43,9 +43,10 @@
           return;
         }
 
-        // If user is neither logged in to live account nor has selected paper trading, show landing page at '/'
+        // Default to paper mode if not already set, preventing redirect loops
         if (!hasPaper) {
-          window.location.replace('/');
+          localStorage.setItem('alphaind_paper_selected', 'true');
+          localStorage.setItem('alphaind_active_desk_mode', 'paper');
         }
       } catch (e) {
         console.error('[Alphaind Router] Gatekeeper error:', e);
