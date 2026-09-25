@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Alphaind · AI Trading Desk
 ### *Pre-Trade Research Workbench & Execution Assistant for Crypto Perps & 7×24 Tokenized Equities*
 
