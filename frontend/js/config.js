@@ -37,9 +37,12 @@
     if (isLocalhost && port && port !== '8000') {
       return `http://${hostname}:8000`;
     }
+    if (isLocalhost && (!port || port === '8000')) {
+      return '';
+    }
 
-    // 4. Default relative path (same-origin / Vercel rewrites to Render backend)
-    return '';
+    // 4. Cloud Production Backend (Render)
+    return 'https://alphaind-trading-desk.onrender.com';
   }
 
   // Global Config Object
