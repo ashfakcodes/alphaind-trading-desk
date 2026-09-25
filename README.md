@@ -96,11 +96,9 @@ Run backend and frontend as distinct microservices:
 
 ```bash
 # Terminal 1: Start Backend API (:8000)
-# Windows: run_backend.bat  |  Linux/macOS: ./run_backend.sh
 python run.py
 
 # Terminal 2: Start Frontend Static Web App (:3000)
-# Windows: run_frontend.bat  |  Linux/macOS: ./run_frontend.sh
 python -m http.server 3000 --directory frontend
 ```
 > Open **`http://localhost:3000`** (the frontend automatically resolves and binds to `http://localhost:8000`).

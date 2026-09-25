@@ -79,10 +79,8 @@ This guide details the streamlined deployment of **Alphaind - AI Trading Desk** 
 
 ## 💻 Local Running Scripts
 
-* **Windows**:
-  * `run_backend.bat` → Starts Backend API on `http://127.0.0.1:8000`
-  * `run_frontend.bat` → Serves Frontend UI on `http://localhost:3000`
-  * `run.bat` → Runs monolithic all-in-one dev runner on `http://localhost:8000`
-* **Linux / macOS**:
-  * `./run_backend.sh`
-  * `./run_frontend.sh`
+* **Full Monolithic Application (Backend + UI on `:8000`)**:
+  * `python run.py`
+* **Decoupled Architecture (Microservices)**:
+  * **Backend API (`:8000`)**: `python run.py` (or `./run_backend.sh` on Linux/macOS)
+  * **Frontend Web App (`:3000`)**: `python -m http.server 3000 --directory frontend` (or `./run_frontend.sh` on Linux/macOS)
