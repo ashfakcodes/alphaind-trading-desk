@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Alphaind · AI Trading Desk
 ### *Pre-Trade Research Workbench & Execution Assistant for Crypto Perps & 7×24 Tokenized Equities*
 
@@ -501,3 +502,7 @@ pytest tests/test_s2_features.py          # rToken regime sentinel & stress test
 
 > [!WARNING]
 > **Financial Risk Disclaimer:** Trading cryptocurrencies, perpetual futures, and leveraged synthetic equity tokens (rTokens) carries substantial risk of financial loss. Leverage can work against you as well as for you. Alphaind operates by default in paper simulation mode. Always practice disciplined risk management and never risk capital you cannot afford to lose.
+=======
+# alphaind-trading-desk
+Alphaind is an institutional co-pilot, not an unconstrained black-box bot. Every execution requires sovereign human confirmation. Zero automated orders are dispatched without explicit trader review.
+>>>>>>> 84e1cca7ed5fa4c874c0110be5ddc224456eb84f
