@@ -1890,6 +1890,34 @@ window.toggleVaultPinInput = function () {
   }
 };
 
+window.addEventListener('message', async (event) => {
+  if (event.data && event.data.type === 'BITGET_OAUTH_SUCCESS') {
+    const sessionId = _pendingOAuthSessionId || sessionStorage.getItem('bitget_oauth_active_session');
+    if (sessionId) {
+      try {
+        const res = await apiFetch(`/api/oauth/session-status?session_id=${encodeURIComponent(sessionId)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 'completed' && data.credentials) {
+            if (_oauthPollInterval) clearInterval(_oauthPollInterval);
+            _oauthPollInterval = null;
+            if (window.AlphaindVault) {
+              await window.AlphaindVault.saveVault(data.credentials, _pendingVaultPin);
+            }
+            await syncCredentialsToDesk(data.credentials);
+            showOAuthToast('Bitget Agentic Subaccount authorized & encrypted!', 'success');
+            updateOAuthTopbarUI();
+            window.openOAuthModal();
+            await fetchAccount();
+          }
+        }
+      } catch (err) {
+        console.warn('[OAuth] postMessage handler error:', err);
+      }
+    }
+  }
+});
+
 window.toggleManualDataKeyInput = function () {
   const box = document.getElementById('manualDataKeyBox');
   if (box) {
@@ -2038,13 +2066,26 @@ window.launchSimulatedOAuth = async function () {
 
 window.submitManualDataKey = async function () {
   const input = document.getElementById('manualDataKeyInput');
-  const dataKey = input ? input.value.trim() : '';
+  let rawVal = input ? input.value.trim() : '';
   const sessionId = _pendingOAuthSessionId || sessionStorage.getItem('bitget_oauth_active_session');
 
-  if (!dataKey) {
-    alert('Please enter a dataKey.');
+  if (!rawVal) {
+    alert('Please enter a dataKey (or the full redirect URL).');
     return;
   }
+
+  // Extract dataKey if user pasted the entire URL
+  let dataKey = rawVal;
+  if (rawVal.includes('dataKey=')) {
+    try {
+      const parsedUrl = new URL(rawVal.startsWith('http') ? rawVal : `http://${rawVal}`);
+      dataKey = parsedUrl.searchParams.get('dataKey') || dataKey;
+    } catch (e) {
+      const match = rawVal.match(/dataKey=([a-zA-Z0-9_-]+)/);
+      if (match) dataKey = match[1];
+    }
+  }
+
   if (!sessionId) {
     alert('No active OAuth session found. Please click "Launch Bitget OAuth" first.');
     return;
@@ -2057,12 +2098,16 @@ window.submitManualDataKey = async function () {
     });
 
     if (!res.ok) {
-      const err = await res.json();
+      const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || 'Exchange failed');
     }
 
     const body = await res.json();
     if (body.credentials && window.AlphaindVault) {
+      if (_oauthPollInterval) {
+        clearInterval(_oauthPollInterval);
+        _oauthPollInterval = null;
+      }
       await window.AlphaindVault.saveVault(body.credentials, _pendingVaultPin);
       await syncCredentialsToDesk(body.credentials);
       showOAuthToast('Bitget Agentic Subaccount authorized & encrypted!', 'success');

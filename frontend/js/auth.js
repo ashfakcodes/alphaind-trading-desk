@@ -7,6 +7,34 @@ let _oauthPollInterval = null;
 let _pendingOAuthSessionId = null;
 let _pendingVaultPin = '';
 
+// Cross-window message listener for popup completion
+window.addEventListener('message', async (event) => {
+  if (event.data && event.data.type === 'BITGET_OAUTH_SUCCESS') {
+    const sessionId = _pendingOAuthSessionId || sessionStorage.getItem('bitget_oauth_active_session');
+    if (sessionId) {
+      try {
+        const res = await apiFetch(`/api/oauth/session-status?session_id=${encodeURIComponent(sessionId)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 'completed' && data.credentials) {
+            if (_oauthPollInterval) clearInterval(_oauthPollInterval);
+            _oauthPollInterval = null;
+            if (window.AlphaindVault) {
+              await window.AlphaindVault.saveVault(data.credentials, _pendingVaultPin);
+            }
+            await syncCredentialsToDesk(data.credentials);
+            showAuthToast('Bitget Agentic Subaccount authorized & encrypted!', 'success');
+            renderConnectedDetails();
+            switchAuthView('connected');
+          }
+        }
+      } catch (err) {
+        console.warn('[OAuth] postMessage handler error:', err);
+      }
+    }
+  }
+});
+
 document.addEventListener('DOMContentLoaded', async () => {
   initSpotlight();
   await checkAuthStatusAndParams();
@@ -286,6 +314,93 @@ window.cancelOAuthSession = function() {
   _pendingOAuthSessionId = null;
   sessionStorage.removeItem('bitget_oauth_active_session');
   switchAuthView('connect');
+};
+
+window.toggleManualDataKeyInput = function() {
+  const box = document.getElementById('manualDataKeyBox');
+  if (box) {
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+  }
+};
+
+window.submitManualDataKey = async function() {
+  const input = document.getElementById('manualDataKeyInput');
+  let rawVal = input ? input.value.trim() : '';
+  const sessionId = _pendingOAuthSessionId || sessionStorage.getItem('bitget_oauth_active_session');
+
+  if (!rawVal) {
+    if (window.showAlertDialog) {
+      await window.showAlertDialog({
+        title: 'dataKey Required',
+        message: 'Please paste the dataKey (or the full redirect URL) from your browser popup.',
+        type: 'warning'
+      });
+    } else {
+      alert('Please paste the dataKey (or full redirect URL).');
+    }
+    return;
+  }
+
+  // Extract dataKey if user pasted the entire URL
+  let dataKey = rawVal;
+  if (rawVal.includes('dataKey=')) {
+    try {
+      const parsedUrl = new URL(rawVal.startsWith('http') ? rawVal : `http://${rawVal}`);
+      dataKey = parsedUrl.searchParams.get('dataKey') || dataKey;
+    } catch (e) {
+      const match = rawVal.match(/dataKey=([a-zA-Z0-9_-]+)/);
+      if (match) dataKey = match[1];
+    }
+  }
+
+  if (!sessionId) {
+    if (window.showAlertDialog) {
+      await window.showAlertDialog({
+        title: 'Active Session Required',
+        message: 'No active OAuth session found in browser memory. Please click "Connect Bitget Account" first, then paste the key.',
+        type: 'warning'
+      });
+    } else {
+      alert('No active OAuth session found. Please start connection first.');
+    }
+    return;
+  }
+
+  try {
+    showAuthToast('Exchanging Bitget authorization key...', 'info');
+    const res = await apiFetch('/api/oauth/complete', {
+      method: 'POST',
+      body: JSON.stringify({ session_id: sessionId, data_key: dataKey })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Authorization exchange failed');
+    }
+
+    const body = await res.json();
+    if (body.credentials && window.AlphaindVault) {
+      if (_oauthPollInterval) {
+        clearInterval(_oauthPollInterval);
+        _oauthPollInterval = null;
+      }
+      await window.AlphaindVault.saveVault(body.credentials, _pendingVaultPin);
+      await syncCredentialsToDesk(body.credentials);
+      showAuthToast('Bitget Agentic Subaccount authorized & encrypted!', 'success');
+      renderConnectedDetails();
+      switchAuthView('connected');
+    }
+  } catch (err) {
+    if (window.showAlertDialog) {
+      await window.showAlertDialog({
+        title: 'Exchange Failed',
+        message: `Failed to exchange dataKey with Bitget: ${err.message}`,
+        type: 'danger'
+      });
+    } else {
+      alert(`Failed to exchange dataKey: ${err.message}`);
+    }
+  }
 };
 
 window.unlockSavedVault = async function() {

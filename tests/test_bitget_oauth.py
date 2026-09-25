@@ -245,3 +245,41 @@ def test_bitget_client_v3_list_response_handling(monkeypatch):
     finally:
         bitget_client.clear_credentials()
 
+
+# -------------------------------------------------------------
+# 5. Cloud Hosting & Custom Domain OAuth Tests
+# -------------------------------------------------------------
+
+def test_oauth_service_start_session_custom_domain():
+    """Verify that cloud / custom domains resolve to standard port 80."""
+    session = bitget_oauth_service.start_oauth_session(host_ip="alphaind.ashfakcodes.wtf")
+    assert session["port"] == 80
+    assert session["host_ip"] == "alphaind.ashfakcodes.wtf"
+    assert "clientServerIpAddress=alphaind.ashfakcodes.wtf" in session["authorize_url"]
+    assert "clientServerPort=80" in session["authorize_url"]
+
+
+def test_api_oauth_callback_endpoint_missing_datakey():
+    """GET /api/oauth/callback without dataKey returns 400 with styled notice."""
+    resp = client.get("/api/oauth/callback")
+    assert resp.status_code == 400
+    assert "text/html" in resp.headers["content-type"]
+    assert "No dataKey received" in resp.text
+
+
+def test_root_route_oauth_callback_interception():
+    """GET /?dataKey=... intercepts OAuth callback and returns HTML."""
+    resp = client.get("/?dataKey=sample_test_key_123")
+    assert resp.status_code == 200
+    assert "text/html" in resp.headers["content-type"]
+    assert "Alphaind" in resp.text
+
+
+def test_auth_route_oauth_callback_interception():
+    """GET /auth.html?dataKey=... intercepts OAuth callback and returns HTML."""
+    resp = client.get("/auth.html?dataKey=sample_test_key_456")
+    assert resp.status_code == 200
+    assert "text/html" in resp.headers["content-type"]
+    assert "Alphaind" in resp.text
+
+

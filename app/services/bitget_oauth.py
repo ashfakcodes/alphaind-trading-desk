@@ -60,6 +60,160 @@ def decrypt_rsa_split_codec(ciphertext_base64_url: str, private_key: rsa.RSAPriv
     return b"".join(chunks).decode("utf-8")
 
 
+def render_oauth_success_html(data_key: Optional[str] = None, error: Optional[str] = None) -> str:
+    """Renders the styled Bitget OAuth completion page with postMessage and auto-close."""
+    if error:
+        return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Alphaind · Authorization Notice</title>
+  <style>
+    body {{
+      background: #070a0e;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }}
+    .card {{
+      background: rgba(14, 18, 25, 0.94);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 16px;
+      padding: 36px 32px;
+      text-align: center;
+      max-width: 440px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+    }}
+    .icon-wrap {{
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px auto;
+    }}
+    h1 {{ color: #f87171; font-size: 20px; font-weight: 700; margin: 0 0 10px 0; }}
+    p {{ color: #94a3b8; font-size: 13.5px; line-height: 1.5; margin: 0 0 22px 0; }}
+    .badge {{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+    }}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon-wrap">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+    </div>
+    <h1>Authorization Issue</h1>
+    <p>{error}</p>
+    <div class="badge">You can close this tab and return to Alphaind</div>
+  </div>
+</body>
+</html>"""
+
+    safe_data_key = data_key or ""
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Alphaind · Bitget Authorization Complete</title>
+  <style>
+    body {{
+      background: #070a0e;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }}
+    .card {{
+      background: rgba(14, 18, 25, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 36px 32px;
+      text-align: center;
+      max-width: 440px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }}
+    .icon-wrap {{
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(25, 147, 248, 0.12);
+      border: 1px solid rgba(25, 147, 248, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px auto;
+      box-shadow: 0 0 20px rgba(25, 147, 248, 0.25);
+    }}
+    h1 {{ color: #f8fafc; font-size: 20px; font-weight: 700; margin: 0 0 10px 0; }}
+    p {{ color: #94a3b8; font-size: 13.5px; line-height: 1.5; margin: 0 0 22px 0; }}
+    .badge {{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(25, 147, 248, 0.12);
+      border: 1px solid rgba(25, 147, 248, 0.3);
+      color: #60a5fa;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+    }}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon-wrap">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1993f8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76z"/>
+        <polyline points="9 12 11 14 15 10"/>
+      </svg>
+    </div>
+    <h1>Bitget Authorization Granted</h1>
+    <p>Your Agentic Subaccount credentials have been securely transmitted to Alphaind.</p>
+    <div class="badge">Closing window in 2 seconds...</div>
+  </div>
+  <script>
+    try {{
+      if (window.opener) {{
+        window.opener.postMessage({{
+          type: 'BITGET_OAUTH_SUCCESS',
+          dataKey: '{safe_data_key}'
+        }}, '*');
+      }}
+    }} catch (e) {{}}
+    setTimeout(function() {{
+      try {{ window.close(); }} catch(e) {{}}
+    }}, 2000);
+  </script>
+</body>
+</html>"""
+
+
 class OAuthCallbackHandler(BaseHTTPRequestHandler):
     """
     Ephemeral HTTP handler that receives the browser redirect from Bitget.
@@ -82,81 +236,14 @@ class OAuthCallbackHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
-            html = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <title>Alphaind · Bitget Authorization Complete</title>
-              <style>
-                body {
-                  background: #070a0e;
-                  color: #e2e8f0;
-                  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  height: 100vh;
-                  margin: 0;
-                }
-                .card {
-                  background: rgba(14, 18, 25, 0.94);
-                  border: 1px solid rgba(255, 255, 255, 0.12);
-                  border-radius: 16px;
-                  padding: 36px 32px;
-                  text-align: center;
-                  max-width: 440px;
-                  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-                }
-                .icon-wrap {
-                  width: 60px;
-                  height: 60px;
-                  border-radius: 50%;
-                  background: rgba(25, 147, 248, 0.12);
-                  border: 1px solid rgba(25, 147, 248, 0.3);
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  margin: 0 auto 20px auto;
-                  box-shadow: 0 0 20px rgba(25, 147, 248, 0.25);
-                }
-                h1 { color: #f8fafc; font-size: 20px; font-weight: 700; margin: 0 0 10px 0; }
-                p { color: #94a3b8; font-size: 13.5px; line-height: 1.5; margin: 0 0 22px 0; }
-                .badge {
-                  display: inline-flex;
-                  align-items: center;
-                  gap: 6px;
-                  padding: 6px 14px;
-                  background: rgba(25, 147, 248, 0.12);
-                  border: 1px solid rgba(25, 147, 248, 0.3);
-                  color: #60a5fa;
-                  border-radius: 9999px;
-                  font-size: 12px;
-                  font-weight: 600;
-                }
-              </style>
-            </head>
-            <body>
-              <div class="card">
-                <div class="icon-wrap">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1993f8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76z"/>
-                    <polyline points="9 12 11 14 15 10"/>
-                  </svg>
-                </div>
-                <h1>Bitget Authorization Granted</h1>
-                <p>Your Agentic Subaccount credentials have been securely transmitted to Alphaind.</p>
-                <div class="badge">You can now close this window and return to Alphaind</div>
-              </div>
-            </body>
-            </html>
-            """
+            html = render_oauth_success_html(data_key=data_key)
             self.wfile.write(html.encode("utf-8"))
         else:
             self.send_response(400)
-            self.send_header("Content-Type", "text/plain")
+            self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
-            self.wfile.write(b"Missing dataKey in OAuth callback.")
+            html = render_oauth_success_html(error="Missing dataKey in OAuth callback.")
+            self.wfile.write(html.encode("utf-8"))
 
 
 class BitgetOAuthService:
@@ -201,10 +288,26 @@ class BitgetOAuthService:
         """
         Starts a new OAuth session:
         1. Generates ephemeral RSA 2048-bit keypair.
-        2. Spawns an ephemeral HTTP callback listener on an unused port.
+        2. If localhost / local IP, starts an ephemeral HTTP callback listener on an unused port.
+           If production domain / remote host (e.g. Render custom domain), uses standard port 80.
         3. Constructs the Bitget authorization URL.
         """
         session_id = f"bg_oauth_{int(time.time() * 1000)}_{threading.get_ident()}"
+
+        # Clean host_ip: strip scheme, port, or path if passed inadvertently
+        clean_host = host_ip.strip()
+        if "://" in clean_host:
+            clean_host = urlparse(clean_host).hostname or clean_host
+        if ":" in clean_host:
+            clean_host = clean_host.split(":")[0]
+        if "/" in clean_host:
+            clean_host = clean_host.split("/")[0]
+
+        is_local = (
+            clean_host.lower() in ("127.0.0.1", "localhost", "0.0.0.0")
+            or clean_host.startswith("192.168.")
+            or clean_host.startswith("10.")
+        )
 
         # Generate RSA keypair
         private_key = rsa.generate_private_key(public_exponent=65537, key_size=KEY_SIZE_BITS)
@@ -217,16 +320,22 @@ class BitgetOAuthService:
         )
         pub_base64 = base64.b64encode(pub_der).decode("utf-8")
 
-        # Find available ephemeral port
-        port = self._find_free_port()
-
-        # Start ephemeral callback server
-        server = HTTPServer(("127.0.0.1", port), OAuthCallbackHandler)
-        setattr(server, "session_id", session_id)
-        setattr(server, "oauth_service", self)
-
-        server_thread = threading.Thread(target=server.serve_forever, daemon=True)
-        server_thread.start()
+        server = None
+        if is_local:
+            # Find available ephemeral port and launch ephemeral server for local dev
+            port = self._find_free_port()
+            try:
+                server = HTTPServer(("127.0.0.1", port), OAuthCallbackHandler)
+                setattr(server, "session_id", session_id)
+                setattr(server, "oauth_service", self)
+                server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+                server_thread.start()
+            except Exception as e:
+                logger.warning(f"[BitgetOAuth] Could not start local ephemeral server on port {port}: {e}")
+        else:
+            # For cloud / production domains (Render, Heroku, custom domains):
+            # Use standard port 80 which connects directly to the public web server proxy
+            port = 80
 
         # Build Bitget Authorize URL
         target_base = base_url or DEFAULT_OAUTH_ENDPOINTS["authorizeBaseUrl"]
@@ -234,7 +343,7 @@ class BitgetOAuthService:
         authorize_url = (
             f"{target_base}{auth_path}?"
             f"publicKey={pub_base64}&"
-            f"clientServerIpAddress={host_ip}&"
+            f"clientServerIpAddress={clean_host}&"
             f"clientServerPort={port}"
         )
 
@@ -244,7 +353,7 @@ class BitgetOAuthService:
             "private_key": private_key,
             "public_key_b64": pub_base64,
             "port": port,
-            "host_ip": host_ip,
+            "host_ip": clean_host,
             "server": server,
             "status": "pending",  # pending -> completed | failed | expired
             "created_at": now,
@@ -256,12 +365,12 @@ class BitgetOAuthService:
         with self._lock:
             self._sessions[session_id] = session_data
 
-        logger.info(f"[BitgetOAuth] Started session {session_id} on port {port}")
+        logger.info(f"[BitgetOAuth] Started session {session_id} on {clean_host}:{port} (is_local={is_local})")
         return {
             "session_id": session_id,
             "authorize_url": authorize_url,
             "port": port,
-            "host_ip": host_ip,
+            "host_ip": clean_host,
             "expires_in": SESSION_TTL_SEC
         }
 
@@ -278,6 +387,36 @@ class BitgetOAuthService:
 
         # Perform account data fetch in background thread
         threading.Thread(target=self._exchange_and_decrypt, args=(session_id, data_key), daemon=True).start()
+
+    def handle_callback_sync(self, data_key: str, session_id: Optional[str] = None) -> tuple[bool, str, Optional[Dict[str, Any]]]:
+        """
+        Synchronous callback handler used by FastAPI GET endpoints.
+        Resolves active session, exchanges dataKey with Bitget, decrypts credentials, and returns HTML.
+        """
+        target_session_id = session_id
+        if not target_session_id:
+            with self._lock:
+                pending_sids = [
+                    sid for sid, s in self._sessions.items()
+                    if s["status"] == "pending" and s["expires_at"] > time.time()
+                ]
+                if pending_sids:
+                    pending_sids.sort(key=lambda sid: self._sessions[sid]["created_at"], reverse=True)
+                    target_session_id = pending_sids[0]
+
+        if not target_session_id:
+            logger.warning("[BitgetOAuth] No active pending OAuth session found for callback.")
+            html = render_oauth_success_html(error="No active pending OAuth session found. Please return to Alphaind and try again.")
+            return False, html, None
+
+        res = self._exchange_and_decrypt(target_session_id, data_key)
+        if res.get("success"):
+            html = render_oauth_success_html(data_key=data_key)
+            return True, html, res.get("credentials")
+        else:
+            err = res.get("error", "Failed to decrypt credentials from Bitget.")
+            html = render_oauth_success_html(error=err)
+            return False, html, None
 
     def exchange_datakey_manually(self, session_id: str, data_key: str) -> Dict[str, Any]:
         """

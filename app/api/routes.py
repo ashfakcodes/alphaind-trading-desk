@@ -1,10 +1,11 @@
 import logging
 from typing import Dict, Any, Optional
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field, model_validator
 
 from app.services.bitget_client import bitget_client
-from app.services.bitget_oauth import bitget_oauth_service
+from app.services.bitget_oauth import bitget_oauth_service, render_oauth_success_html
 from app.services.openrouter_client import openrouter_client
 from app.quant.analyst import QuantAnalyst
 from app.quant.backtester import backtester
@@ -460,9 +461,18 @@ def get_oauth_session_status(session_id: str = Query(..., description="Active OA
     """Poll status of an active OAuth session."""
     return bitget_oauth_service.get_session_status(session_id)
 
+@api_router.get("/oauth/callback", response_class=HTMLResponse)
+def get_oauth_callback(dataKey: Optional[str] = Query(None), data_key: Optional[str] = Query(None), session_id: Optional[str] = Query(None)):
+    """Handles browser GET redirect from Bitget OAuth callback."""
+    key = (dataKey or data_key or "").strip()
+    if not key:
+        return HTMLResponse(content=render_oauth_success_html(error="No dataKey received in callback."), status_code=400)
+    success, html, _ = bitget_oauth_service.handle_callback_sync(key, session_id=session_id)
+    return HTMLResponse(content=html, status_code=200 if success else 400)
+
 @api_router.post("/oauth/complete")
 def complete_oauth(req: OAuthCompleteRequest):
-    """Directly exchange dataKey if received via frontend redirect."""
+    """Directly exchange dataKey if received via frontend redirect or manual entry."""
     res = bitget_oauth_service.exchange_datakey_manually(req.session_id, req.data_key)
     if not res.get("success"):
         raise HTTPException(status_code=400, detail=res.get("error", "OAuth exchange failed"))

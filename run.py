@@ -54,10 +54,25 @@ if static_dir.exists():
     if js_dir.exists():
         app.mount("/js", StaticFiles(directory=str(js_dir)), name="js")
 
+from fastapi.responses import FileResponse, HTMLResponse
+from typing import Optional
+
+def _check_and_handle_oauth_callback(dataKey: Optional[str] = None, data_key: Optional[str] = None, session_id: Optional[str] = None):
+    key = (dataKey or data_key or "").strip()
+    if key:
+        from app.services.bitget_oauth import bitget_oauth_service
+        success, html, _ = bitget_oauth_service.handle_callback_sync(key, session_id=session_id)
+        return HTMLResponse(content=html, status_code=200)
+    return None
+
 @app.get("/")
 @app.get("/landing")
 @app.get("/landing.html")
-def serve_ui():
+def serve_ui(dataKey: Optional[str] = None, data_key: Optional[str] = None, session_id: Optional[str] = None):
+    cb_resp = _check_and_handle_oauth_callback(dataKey, data_key, session_id)
+    if cb_resp:
+        return cb_resp
+
     landing_file = static_dir / "landing.html"
     if landing_file.exists():
         return FileResponse(landing_file)
@@ -71,9 +86,22 @@ def serve_ui():
         "api_health": "/api/health"
     }
 
+@app.get("/callback")
+@app.get("/oauth/callback")
+def serve_oauth_callback(dataKey: Optional[str] = None, data_key: Optional[str] = None, session_id: Optional[str] = None):
+    cb_resp = _check_and_handle_oauth_callback(dataKey, data_key, session_id)
+    if cb_resp:
+        return cb_resp
+    from app.services.bitget_oauth import render_oauth_success_html
+    return HTMLResponse(content=render_oauth_success_html(error="No dataKey provided in callback URL."), status_code=400)
+
 @app.get("/desk")
 @app.get("/desk.html")
-def serve_desk():
+def serve_desk(dataKey: Optional[str] = None, data_key: Optional[str] = None, session_id: Optional[str] = None):
+    cb_resp = _check_and_handle_oauth_callback(dataKey, data_key, session_id)
+    if cb_resp:
+        return cb_resp
+
     desk_file = static_dir / "desk.html"
     if desk_file.exists():
         return FileResponse(desk_file)
@@ -84,7 +112,11 @@ def serve_desk():
 
 @app.get("/auth")
 @app.get("/auth.html")
-def serve_auth():
+def serve_auth(dataKey: Optional[str] = None, data_key: Optional[str] = None, session_id: Optional[str] = None):
+    cb_resp = _check_and_handle_oauth_callback(dataKey, data_key, session_id)
+    if cb_resp:
+        return cb_resp
+
     auth_file = static_dir / "auth.html"
     if auth_file.exists():
         return FileResponse(auth_file)
