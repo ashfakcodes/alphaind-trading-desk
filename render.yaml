@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: alphaind-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn run:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.8
+      - key: PORT
+        value: 8000
+      - key: HOST
+        value: 0.0.0.0
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: BITGET_IS_SIMULATION
+        value: "true"
+      - key: OPENROUTER_MODEL
+        value: anthropic/claude-3.5-sonnet
+      - key: BITGET_QWEN_MODEL
+        value: qwen3.8-max
+      - key: BITGET_QWEN_BASE_URL
+        value: https://hackathon.bitgetops.com/v1
+      - key: BITGET_QWEN_WIRE_API
+        value: responses
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: BITGET_QWEN_API_KEY
+        sync: false
+      - key: BITGET_API_KEY
+        sync: false
+      - key: BITGET_API_SECRET
+        sync: false
+      - key: BITGET_API_PASSPHRASE
+        sync: false

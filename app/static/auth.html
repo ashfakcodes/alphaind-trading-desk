@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bitget OAuth · Alphaind AI Trading Desk</title>
+  <link rel="stylesheet" href="css/styles.css?v=4.5">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="obsidian-hud auth-page">
+  <!-- Ambient Grid & Spotlight Radar -->
+  <div class="grid-backdrop"></div>
+  <div class="spotlight-layer" id="spotlight"></div>
+  <div class="spotlight-aura" id="spotlightAura"></div>
+
+  <!-- Auth Page Main Centered Container -->
+  <main class="auth-page-container">
+    <!-- Brand Badge Above Auth Card -->
+    <div class="auth-brand-badge" onclick="window.location.href='/';" style="cursor: pointer;" title="Back to Platform Overview & Features">
+      <div class="brand-logo">
+        <img width="36" height="36" src="src/alphaind_logo_white.svg" alt="Alphaind Logo"/>
+      </div>
+      <div class="brand-titles">
+        <span class="brand-name">Alphaind</span>
+        <span class="brand-tagline">AI Trading Desk · Bitget</span>
+      </div>
+    </div>
+
+    <div class="hud-modal-card glass-panel auth-card" id="oauthModalCard">
+      <!-- Modal Header -->
+      <div class="hud-modal-header">
+        <div class="hmh-left">
+          <span class="hmh-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </span>
+          <div>
+            <h2 class="hmh-title">Bitget Agentic Account OAuth</h2>
+            <p class="hmh-subtitle">Hardware-Grade AES-GCM Encrypted · Token-Free Handshake</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Body (Dynamic Views) -->
+      <div class="hud-modal-body">
+        <!-- View 1: Disconnected / Initial State -->
+        <div class="oauth-view" id="oauthViewConnect">
+          <div class="oauth-explainer">
+            <div class="oe-row">
+              <span class="oe-num">1</span>
+              <div>
+                <strong>Isolated Agentic Subaccount</strong>
+                <p>Dedicated Bitget agent subaccount isolates funds to prevent unauthorized drawdown.</p>
+              </div>
+            </div>
+            <div class="oe-row">
+              <span class="oe-num">2</span>
+              <div>
+                <strong>Zero Manual API Keys</strong>
+                <p>Browser OAuth automatically generates and negotiates credentials via RSA-2048 handshake.</p>
+              </div>
+            </div>
+            <div class="oe-row">
+              <span class="oe-num">3</span>
+              <div>
+                <strong>Client-Side Encrypted Vault</strong>
+                <p>Keys are encrypted client-side with 256-bit AES-GCM before writing to local storage.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Encryption Settings Toggle -->
+          <div class="vault-security-options">
+            <div class="vso-header">
+              <label class="vso-label">Storage Protection Mode</label>
+              <span class="vso-rec">Recommended</span>
+            </div>
+            <div class="vso-selector">
+              <label class="vso-radio-opt">
+                <input type="radio" name="vaultMode" value="device" id="vaultModeDevice" checked onchange="window.toggleVaultPinInput();">
+                <span><strong>Device Vault (One-Click)</strong><br><small>Hardware-tied 256-bit AES-GCM key</small></span>
+              </label>
+              <label class="vso-radio-opt">
+                <input type="radio" name="vaultMode" value="pin" id="vaultModePin" onchange="window.toggleVaultPinInput();">
+                <span><strong>Master PIN (High Security)</strong><br><small>PBKDF2 SHA-256 (100,000 rounds)</small></span>
+              </label>
+            </div>
+            <div class="vso-pin-box" id="vaultPinBox" style="display: none;">
+              <input type="password" id="vaultPinInput" class="vault-input" placeholder="Create a 4-8 digit vault PIN..." maxlength="16">
+              <small class="vso-hint">You will enter this PIN each time you unlock your desk.</small>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="oauth-modal-actions">
+            <button class="btn-oauth-primary" id="btnLaunchOAuth" onclick="window.launchBitgetOAuth();">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Connect Bitget Account</span>
+            </button>
+          </div>
+
+          <!-- Quick Skip Option -->
+          <div class="auth-skip-row" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn-oauth-skip" onclick="window.skipToTradingDesk();">
+              <span>Continue with Paper Trading Desk</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button class="btn-oauth-skip" onclick="window.location.href='/';">
+              <span>Platform Tour & Architecture</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- View 2: Awaiting Authorization Flow -->
+        <div class="oauth-view" id="oauthViewWaiting" style="display: none;">
+          <div class="waiting-flow-container">
+            <div class="radar-pulse-box">
+              <div class="radar-spinner"></div>
+              <span class="radar-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              </span>
+            </div>
+            <h3 class="waiting-title">Awaiting Bitget Authorization...</h3>
+            <p class="waiting-desc">A browser window has opened for you to approve your Agentic Subaccount connection.</p>
+            <div class="waiting-meta-box">
+              <div class="wmb-item">
+                <span class="wmb-label">Session ID:</span>
+                <span class="wmb-val" id="oauthSessionIdDisplay">...</span>
+              </div>
+              <div class="wmb-item">
+                <span class="wmb-label">Ephemeral Callback:</span>
+                <span class="wmb-val" id="oauthPortDisplay">127.0.0.1:0</span>
+              </div>
+              <div class="wmb-item">
+                <span class="wmb-label">Security:</span>
+                <span class="wmb-val highlight">RSA 2048-Bit Ephemeral Keypair</span>
+              </div>
+            </div>
+            <div class="waiting-actions">
+              <button class="btn-oauth-secondary" onclick="window.cancelOAuthSession();">Cancel</button>
+              <a class="btn-oauth-secondary" id="reopenAuthLink" href="#" target="_blank">Reopen Auth Tab ↗</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- View 3: Connected & Active -->
+        <div class="oauth-view" id="oauthViewConnected" style="display: none;">
+          <div class="connected-badge-row">
+            <div class="conn-dot-pulsing"></div>
+            <div>
+              <h3 class="conn-title">Agentic Subaccount Connected</h3>
+              <p class="conn-subtitle">Encrypted in browser storage · Live Desk Ready</p>
+            </div>
+          </div>
+
+          <div class="account-spec-table">
+            <div class="ast-row">
+              <span class="ast-label">Agent User ID:</span>
+              <span class="ast-val" id="connectedUserId">bg_agent_...</span>
+            </div>
+            <div class="ast-row">
+              <span class="ast-label">Masked API Key:</span>
+              <span class="ast-val code-font" id="connectedMaskedKey">bg_live_...</span>
+            </div>
+            <div class="ast-row">
+              <span class="ast-label">Cipher Engine:</span>
+              <span class="ast-val highlight">AES-GCM (256-bit) WebCrypto</span>
+            </div>
+            <div class="ast-row">
+              <span class="ast-label">Desk Mode:</span>
+              <span class="ast-val" id="connectedDeskMode">Bitget Live Agentic Account</span>
+            </div>
+            <div class="ast-row">
+              <span class="ast-label">Connected At:</span>
+              <span class="ast-val" id="connectedTimestamp">Just now</span>
+            </div>
+          </div>
+
+          <!-- Prominent Launch Trading Desk Button -->
+          <div class="launch-desk-row">
+            <button class="btn-oauth-primary btn-launch-trading-desk" onclick="window.launchLiveTradingDesk();">
+              <span>Launch Trading Desk</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+
+          <div class="connected-actions">
+            <button class="btn-oauth-secondary" onclick="window.syncVaultToDesk();">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              <span>Re-sync Balance</span>
+            </button>
+            <button class="btn-oauth-secondary" onclick="window.lockVault();">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Lock Vault</span>
+            </button>
+            <button class="btn-oauth-danger" onclick="window.disconnectAndWipe();">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <span>Disconnect &amp; Wipe</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- View 4: Locked Vault (Requires PIN/Unlock) -->
+        <div class="oauth-view" id="oauthViewLocked" style="display: none;">
+          <div class="locked-container">
+            <div class="locked-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-base)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <h3 class="conn-title">Agentic Vault Locked</h3>
+            <p class="conn-subtitle">An encrypted credential vault exists in this browser. Unlock with your master PIN.</p>
+            <div class="unlock-box">
+              <input type="password" id="unlockPinInput" class="vault-input" placeholder="Enter your vault PIN..." maxlength="16">
+              <button class="btn-oauth-primary" onclick="window.unlockSavedVault();">Unlock Vault</button>
+            </div>
+            <button class="text-btn danger" onclick="window.disconnectAndWipe();">Wipe Vault &amp; Start Over</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/config.js?v=4.5"></script>
+  <script src="js/dialog.js?v=4.6"></script>
+  <script src="js/crypto-vault.js?v=4.5"></script>
+  <script src="js/auth.js?v=4.5"></script>
+</body>
+</html>

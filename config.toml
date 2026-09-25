@@ -1,0 +1,8 @@
+model = "qwen3.8-max"
+model_provider = "bitget-qwen"
+
+[model_providers.bitget-qwen]
+name = "Bitget Qwen"
+base_url = "https://hackathon.bitgetops.com/v1"
+env_key = "BITGET_QWEN_API_KEY"
+wire_api = "responses"
