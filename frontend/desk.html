@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alphaind · AI Trading Desk</title>
+  <!-- Early Gatekeeper: Redirect First-Time Visitors (Without Live Vault or Selected Paper Mode) to / -->
+  <script>
+    (function () {
+      try {
+        var p = new URLSearchParams(window.location.search);
+        // OAuth callback return with dataKey -> allow auth handler to process
+        if (p.get('dataKey')) return;
+
+        // If explicitly requested live mode via query parameter
+        if (p.get('mode') === 'live') {
+          localStorage.setItem('alphaind_active_desk_mode', 'live');
+          localStorage.setItem('alphaind_paper_selected', 'true');
+          localStorage.setItem('alphaind_has_visited', 'true');
+          return;
+        }
+
+        // If explicit paper mode, demo, or prompt in URL query params -> mark paper selected
+        if (p.get('mode') === 'paper' || p.get('demo') || p.get('prompt')) {
+          localStorage.setItem('alphaind_paper_selected', 'true');
+          localStorage.setItem('alphaind_active_desk_mode', 'paper');
+          localStorage.setItem('alphaind_has_visited', 'true');
+          return;
+        }
+
+        var hasVault = Boolean(
+          localStorage.getItem('alphaind_agentic_vault') ||
+          localStorage.getItem('alphaind_vault_meta') ||
+          localStorage.getItem('alphaind_bitget_vault')
+        );
+        var isLive = localStorage.getItem('alphaind_active_desk_mode') === 'live';
+        var hasLive = hasVault || isLive;
+        var hasPaper = localStorage.getItem('alphaind_paper_selected') === 'true';
+
+        // If user has an active live session or encrypted vault, ensure entry to desk
+        if (hasLive) {
+          localStorage.setItem('alphaind_paper_selected', 'true');
+          return;
+        }
+
+        // Default to paper mode if not already set, preventing redirect loops
+        if (!hasPaper) {
+          localStorage.setItem('alphaind_paper_selected', 'true');
+          localStorage.setItem('alphaind_active_desk_mode', 'paper');
+        }
+      } catch (e) {
+        console.error('[Alphaind Router] Gatekeeper error:', e);
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="css/styles.css?v=4.4">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="obsidian-hud">
+  <!-- Ambient Grid & Spotlight Radar -->
+  <div class="grid-backdrop"></div>
+  <div class="spotlight-layer" id="spotlight"></div>
+  <div class="spotlight-aura" id="spotlightAura"></div>
+
+  <!-- HUD Topbar -->
+  <header class="hud-topbar">
+    <div class="topbar-brand" onclick="window.location.href='/';" style="cursor: pointer;" title="Platform Tour & Architecture Overview">
+      <div class="brand-logo">
+        <img width="32" height="32" src="src/alphaind_logo_white.svg" alt="Alphaind Logo"/>
+      </div>
+      <div class="brand-titles">
+        <span class="brand-name">Alphaind</span>
+        <span class="brand-tagline">AI Trading Desk · Bitget</span>
+      </div>
+    </div>
+
+    <!-- Center HUD Indicator: Live ET Session Chip -->
+    <div class="topbar-center-indicators">
+      <div class="topbar-session-chip" id="topbarSessionChip" title="Live Eastern Time Session Clock">
+        <span class="session-dot live"></span>
+        <span id="topbarSessionName">SESSION: Mkt Open</span>
+      </div>
+    </div>
+
+    <!-- Topbar Right: Paper/Live Switcher, Bitget OAuth Badge, & Account Balance -->
+    <div class="topbar-user">
+      <div class="topbar-auth-group">
+        <!-- Paper Trade vs Live Account Switcher -->
+        <div class="topbar-mode-toggle" id="topbarModeToggle">
+          <button type="button" class="tmt-btn active paper" id="tmtBtnPaper" onclick="window.switchTradingMode('paper');" title="Paper Trading Simulation Desk (Risk-Free)">
+            <span class="tmt-dot"></span>
+            <span>Paper Desk</span>
+          </button>
+          <button type="button" class="tmt-btn" id="tmtBtnLive" onclick="window.switchTradingMode('live');" title="Live Bitget Account Mode">
+            <span class="tmt-dot"></span>
+            <span>Live Account</span>
+          </button>
+        </div>
+
+        <!-- OAuth Connection Trigger Badge -->
+        <button class="oauth-connect-btn" id="oauthConnectBtn" onclick="window.location.href='/auth';" title="Manage Bitget Agentic Subaccount Connection">
+          <span class="oauth-dot"></span>
+          <span id="oauthBtnLabel">Agentic OAuth</span>
+        </button>
+      </div>
+
+      <div class="user-balance" id="userBalanceBox" onclick="window.switchAgentMode('portfolio');" title="Click to view all asset holdings & Portfolio VaR">
+        <span class="ub-label" id="ubLabel">Paper Cash (Tradable)</span>
+        <span class="ub-val" id="userBalanceDisplay">$50,000.00</span>
+        <span class="ub-sub" id="ubSub">Liquid USDT Margin</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Segmented Mode Switcher Strip -->
+  <nav class="agentic-mode-strip" id="agenticModeStrip">
+    <div class="segmented-control">
+      <button class="agentic-mode-btn active" id="modeBtnScanner" onclick="window.switchAgentMode('scanner');">
+        Watchlist Scanner
+      </button>
+      <button class="agentic-mode-btn" id="modeBtnDebate" onclick="window.switchAgentMode('debate');">
+        Swarm Debate
+      </button>
+      <button class="agentic-mode-btn" id="modeBtnPortfolio" onclick="window.switchAgentMode('portfolio');">
+        Portfolio VaR
+      </button>
+    </div>
+  </nav>
+
+  <!-- Weekend rToken Notification Banner -->
+  <div class="rtoken-weekend-banner glass-panel" id="rtokenWeekendBanner" style="display: none;">
+    <div class="rwb-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div class="rwb-content">
+      <strong>7×24 rToken Weekend Regime Active:</strong> Underlying US equity cash markets are closed. Bitget rTokens trade on synthetic weekend liquidity with a <span class="rwb-highlight" id="rwbSpreadMult">2.4x</span> wider spread. Monday Cash Open gap risk is elevated. <strong>Suggested Max Weekend Leverage: 2x.</strong>
+    </div>
+    <button class="rwb-dismiss" onclick="document.getElementById('rtokenWeekendBanner').style.display='none'" title="Dismiss">✕</button>
+  </div>
+
+  <!-- MAIN SINGLE-SCREEN WORKSPACE -->
+  <main class="hud-main">
+    
+    <!-- LEFT WORKSPACE COLUMN: 7-PILLAR QUANT MATRIX & SWARM DEFENSE -->
+    <div class="hud-left-column">
+      
+      <!-- 1. MULTI-AGENT SWARM PROTECTION & QUANT MATRIX -->
+      <section class="agents-overview-card glass-panel collapsed" id="agentsOverviewCard">
+        <div class="card-title-row" onclick="window.toggleAgentsOverviewCard();" style="cursor: pointer;" title="Click to expand / collapse 7 Alpha Engines">
+          <div class="agents-title-group">
+            <span class="card-tag">7 ALPHA ENGINES</span>
+            <span class="agents-count-badge" id="swarmActiveAgentsBadge">Calibrated &amp; Standby</span>
+          </div>
+          <div class="card-header-actions">
+            <span class="card-toggle-btn" id="agentsCardToggleIcon" title="Toggle 7 Alpha Engines">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </div>
+        </div>
+
+        <div class="agents-accordion-stack" id="agentsAccordionStack">
+          <!-- Pillar 1: Volatility Sentinel -->
+          <div class="agent-accordion safe" id="agentCardVol" data-agent="Vol">
+            <div class="agent-accordion-header" onclick="toggleAccordion(this)">
+              <div class="accordion-left">
+                <span class="agent-status-dot"></span>
+                <span class="agent-icon-badge">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </span>
+                <div class="accordion-name-group">
+                  <span class="agent-name">Price Turbulence</span>
+                  <span class="agent-role">Volatility Sentinel</span>
+                </div>
+              </div>
+              <div class="accordion-right">
+                <span class="agent-pill" id="agentPillVol">Calm &amp; Stable</span>
+                <span class="accordion-chevron">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="agent-accordion-body">
+              <div class="agent-plain-result" id="agentResultVol">
+                Prices are moving steadily with normal swings. Safe from sudden whipsaws.
+              </div>
+              <div class="agent-thought-box">
+                <div class="thought-badge">AUDIT TRACE</div>
+                <div class="subagent-thoughts-list" id="agentThoughtsVol">
+                  <div class="thought-item"><span class="t-arrow">›</span> Scanning market turbulence and ATR bandwidth.</div>
+                  <div class="thought-item"><span class="t-arrow">›</span> Price action is disciplined and steady. Safe to trade.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 2: Fraud Hunter -->
+          <div class="agent-accordion safe" id="agentCardFraud" data-agent="Fraud">
+            <div class="agent-accordion-header" onclick="toggleAccordion(this)">
+              <div class="accordion-left">
+                <span class="agent-status-dot"></span>
+                <span class="agent-icon-badge">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                </span>
+                <div class="accordion-name-group">
+                  <span class="agent-name">Asset Verification</span>
+                  <span class="agent-role">Fraud Hunter</span>
+                </div>
+              </div>
+              <div class="accordion-right">
+                <span class="agent-pill" id="agentPillFraud">Verified Listing</span>
+                <span class="accordion-chevron">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="agent-accordion-body">
+              <div class="agent-plain-result" id="agentResultFraud">
+                Officially verified asset with genuine trading activity on Bitget.
+              </div>
+              <div class="agent-thought-box">
+                <div class="thought-badge">AUDIT TRACE</div>
+                <div class="subagent-thoughts-list" id="agentThoughtsFraud">
+                  <div class="thought-item"><span class="t-arrow">›</span> Verifying ticker authenticity against Bitget official spot &amp; rToken catalog.</div>
+                  <div class="thought-item"><span class="t-arrow">›</span> Authentic asset with verifiable trading history.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 3: Security Guard -->
+          <div class="agent-accordion safe" id="agentCardSec" data-agent="Sec">
+            <div class="agent-accordion-header" onclick="toggleAccordion(this)">
+              <div class="accordion-left">
+                <span class="agent-status-dot"></span>
+                <span class="agent-icon-badge">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                </span>
+                <div class="accordion-name-group">
+                  <span class="agent-name">Contract &amp; Asset Integrity</span>
+                  <span class="agent-role">Security Guard</span>
+                </div>
+              </div>
+              <div class="accordion-right">
+                <span class="agent-pill" id="agentPillSec">Verified Secure</span>
+                <span class="accordion-chevron">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="agent-accordion-body">
+              <div class="agent-plain-result" id="agentResultSec">
+                Standard token specifications with transparent issuance mechanism.
+              </div>
+              <div class="agent-thought-box">
+                <div class="thought-badge">AUDIT TRACE</div>
+                <div class="subagent-thoughts-list" id="agentThoughtsSec">
+                  <div class="thought-item"><span class="t-arrow">›</span> Auditing asset wrapper structure and custodian permissions.</div>
+                  <div class="thought-item"><span class="t-arrow">›</span> Clean topology; no hidden mint backdoors or transfer taxes.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 4: Liquidity Auditor (Depth Walker) -->
+          <div class="agent-accordion safe" id="agentCardLiq" data-agent="Liq">
+            <div class="agent-accordion-header" onclick="toggleAccordion(this)">
+              <div class="accordion-left">
+                <span class="agent-status-dot"></span>
+                <span class="agent-icon-badge">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                </span>
+                <div class="accordion-name-group">
+                  <span class="agent-name">Orderbook Depth Walker</span>
+                  <span class="agent-role">Liquidity Auditor</span>
+                </div>
+              </div>
+              <div class="accordion-right">
+                <span class="agent-pill" id="agentPillLiq">Fair Price</span>
+                <span class="accordion-chevron">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="agent-accordion-body">
+              <div class="agent-plain-result" id="agentResultLiq">
+                Plenty of buyers and sellers. Expected price slippage is less than 0.05%.
+              </div>
+              
+              <!-- Depth Walk Telemetry Metrics -->
+              <div class="depth-walk-metrics-grid" id="depthWalkMetricsGrid">
+                <div class="dwm-box">
+                  <span class="dwm-label">LEVELS CONSUMED</span>
+                  <span class="dwm-val" id="dwLevelsVal">1 Level</span>
+                </div>
+                <div class="dwm-box">
+                  <span class="dwm-label">TOP-5 DEPTH</span>
+                  <span class="dwm-val" id="dwTop5Val">$45,000</span>
+                </div>
+                <div class="dwm-box">
+                  <span class="dwm-label">SLIPPAGE</span>
+                  <span class="dwm-val" id="dwSlippageVal">0.02%</span>
+                </div>
+                <div class="dwm-box">
+                  <span class="dwm-label">EXECUTION MODE</span>
+                  <span class="dwm-val" id="dwTwapVal">Direct Limit</span>
+                </div>
+              </div>
+
+              <div class="agent-thought-box">
+                <div class="thought-badge">AUDIT TRACE</div>
+                <div class="subagent-thoughts-list" id="agentThoughtsLiq">
+                  <div class="thought-item"><span class="t-arrow">›</span> Walking Level-2 orderbook bids and asks for market depth.</div>
+                  <div class="thought-item"><span class="t-arrow">›</span> Deep orderbook; slippage well below 0.05% threshold.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 5: Psychology Shield -->
+          <div class="agent-accordion safe" id="agentCardPsych" data-agent="Psych">
+            <div class="agent-accordion-header" onclick="toggleAccordion(this)">
+              <div class="accordion-left">
+                <span class="agent-status-dot"></span>
+                <span class="agent-icon-badge">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/></svg>
+                </span>
+                <div class="accordion-name-group">
+                  <span class="agent-name">Risk &amp; Mindset Shield</span>
+                  <span class="agent-role">Psychology Shield</span>
+                </div>
+              </div>
+              <div class="accordion-right">
+                <span class="agent-pill" id="agentPillPsych">Disciplined</span>
+                <span class="accordion-chevron">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="agent-accordion-body">
+              <div class="agent-plain-result" id="agentResultPsych">
+                Reasonable leverage and disciplined sizing. No emotional tilt detected.
+              </div>
+              <div class="agent-thought-box">
+                <div class="thought-badge">AUDIT TRACE</div>
+                <div class="subagent-thoughts-list" id="agentThoughtsPsych">
+                  <div class="thought-item"><span class="t-arrow">›</span> Analyzing prompt sentiment, loss frequency, and requested leverage.</div>
+                  <div class="thought-item"><span class="t-arrow">›</span> Reasonable leverage and disciplined sizing. No tilt detected.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 6: Quantitative Analyst -->
+          <div class="agent-accordion safe" id="agentCardQuant" data-agent="Quant">
+            <div class="agent-accordion-header" onclick="toggleAccordion(this)">
+              <div class="accordion-left">
+                <span class="agent-status-dot"></span>
+                <span class="agent-icon-badge">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                </span>
+                <div class="accordion-name-group">
+                  <span class="agent-name">Statistical Factors (Hurst &amp; RSI)</span>
+                  <span class="agent-role">Quantitative Analyst</span>
+                </div>
+              </div>
+              <div class="accordion-right">
+                <span class="agent-pill" id="agentPillQuant">Statistical Edge</span>
+                <span class="accordion-chevron">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="agent-accordion-body">
+              <div class="agent-plain-result" id="agentResultQuant">
+                Favorable multi-factor alpha score and Hurst persistence supporting trade direction.
+              </div>
+              <div class="agent-thought-box">
+                <div class="thought-badge">AUDIT TRACE</div>
+                <div class="subagent-thoughts-list" id="agentThoughtsQuant">
+                  <div class="thought-item"><span class="t-arrow">›</span> Evaluating Hurst exponent autocorrelation and momentum persistence.</div>
+                  <div class="thought-item"><span class="t-arrow">›</span> Multi-factor composite alpha confirms structural statistical edge.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pillar 7: Strategy Backtester (500 Monte Carlo Fan) -->
+          <div class="agent-accordion safe" id="agentCardBacktest" data-agent="Backtest">
+            <div class="agent-accordion-header" onclick="toggleAccordion(this)">
+              <div class="accordion-left">
+                <span class="agent-status-dot"></span>
+                <span class="agent-icon-badge">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                </span>
+                <div class="accordion-name-group">
+                  <span class="agent-name">Empirical Simulation &amp; Monte Carlo</span>
+                  <span class="agent-role">Strategy Backtester</span>
+                </div>
+              </div>
+              <div class="accordion-right">
+                <span class="agent-pill" id="agentPillBacktest">Historical Edge</span>
+                <span class="accordion-chevron">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="agent-accordion-body">
+              <div class="agent-plain-result" id="agentResultBacktest">
+                Bar-by-bar simulation verifies positive expectancy with contained 500-run Monte Carlo tail risk.
+              </div>
+
+              <!-- Inline Backtest Quant Metric Grid -->
+              <div class="agent-backtest-metrics-grid" id="agentBacktestMetricsGrid">
+                <div class="abm-box">
+                  <span class="abm-label">WIN RATE</span>
+                  <span class="abm-val" id="abmWinRate">62.0%</span>
+                </div>
+                <div class="abm-box">
+                  <span class="abm-label">SHARPE RATIO</span>
+                  <span class="abm-val" id="abmSharpe">1.84</span>
+                </div>
+                <div class="abm-box">
+                  <span class="abm-label">MAX DRAWDOWN</span>
+                  <span class="abm-val" id="abmMaxDrawdown">8.4%</span>
+                </div>
+                <div class="abm-box">
+                  <span class="abm-label">500-RUN RUIN TAIL</span>
+                  <span class="abm-val" id="abmRuinRisk">0.2%</span>
+                </div>
+              </div>
+
+              <div class="agent-thought-box">
+                <div class="thought-badge">AUDIT TRACE</div>
+                <div class="subagent-thoughts-list" id="agentThoughtsBacktest">
+                  <div class="thought-item"><span class="t-arrow">›</span> Simulating historical bar executions with realistic taker fees and slippage.</div>
+                  <div class="thought-item"><span class="t-arrow">›</span> Running 500 Monte Carlo permutations for worst-case ruin drawdown.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. SWARM DELIBERATION ARENA (BULL VS BEAR DEBATE) -->
+      <div class="debate-arena-card glass-panel" id="debateArenaCard" style="display: none; margin-top: 14px;">
+        <div class="card-title-row">
+          <div class="agents-title-group">
+            <span class="card-tag">SWARM DELIBERATION ARENA</span>
+            <span class="agents-count-badge" id="debateTargetSymbolBadge" style="background: rgba(25, 147, 248, 0.15); color: var(--accent-base, #1993f8);">NVDAUSDT</span>
+            <span class="agents-count-badge" id="debateConsensusBadge">DEBATE READY</span>
+          </div>
+          <div class="card-status-note">Bull vs Bear Consensus</div>
+        </div>
+
+        <!-- Active Thesis Context Strip (Driven by Research Thesis) -->
+        <div class="debate-thesis-header" id="debateThesisHeader">
+          <div class="dth-left">
+            <span class="dth-tag">ARGUING THESIS</span>
+            <span class="dth-thesis-quote" id="debateActiveThesisQuote">Enter your trade thesis in the Command Bar above to convene the Swarm Deliberation Arena…</span>
+          </div>
+          <div class="dth-right" id="debateThesisPills">
+            <span class="dth-param-pill" id="dthParamAsset">NVDAUSDT</span>
+            <span class="dth-param-pill" id="dthParamSize">25 Tokens</span>
+            <span class="dth-param-pill highlight" id="dthParamLev">5x Lev</span>
+          </div>
+        </div>
+
+        <!-- Dialogue Transcript Area -->
+        <div class="deliberation-dialogue-list" id="debateDialogueList">
+          <!-- Populated dynamically by app.js -->
+        </div>
+
+
+      </div>
+
+      <!-- 3. WATCHLIST ALPHA SCANNER -->
+      <div class="market-scanner-card glass-panel" id="marketScannerCard" style="display: block; margin-top: 14px;">
+        <div class="card-title-row">
+          <div class="agents-title-group">
+            <span class="card-tag">WATCHLIST ALPHA SCANNER</span>
+            <span class="agents-count-badge" id="scannerCountBadge">Scanning...</span>
+          </div>
+          <div class="scanner-filter-group">
+            <button class="btn-scan-filter active" id="scanFilterMomentum" onclick="window.fetchMarketScan('momentum');">Momentum</button>
+            <button class="btn-scan-filter" id="scanFilterAlpha" onclick="window.fetchMarketScan('alpha');">Alpha</button>
+            <button class="btn-scan-filter" id="scanFilterOversold" onclick="window.fetchMarketScan('oversold');">Oversold</button>
+          </div>
+        </div>
+        <div class="scanner-table-wrap">
+          <table class="scanner-table">
+            <thead>
+              <tr>
+                <th>PAIR</th>
+                <th>PRICE</th>
+                <th>24H CHG</th>
+                <th>ALPHA</th>
+                <th>HURST</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody id="scannerTableBody">
+              <tr class="scanner-skeleton-row">
+                <td><div class="scanner-skeleton-bar" style="width: 65px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 55px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 48px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 42px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 38px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 50px; height: 20px; border-radius: 4px;"></div></td>
+              </tr>
+              <tr class="scanner-skeleton-row">
+                <td><div class="scanner-skeleton-bar" style="width: 70px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 50px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 45px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 40px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 35px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 50px; height: 20px; border-radius: 4px;"></div></td>
+              </tr>
+              <tr class="scanner-skeleton-row">
+                <td><div class="scanner-skeleton-bar" style="width: 58px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 60px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 46px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 44px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 36px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 50px; height: 20px; border-radius: 4px;"></div></td>
+              </tr>
+              <tr class="scanner-skeleton-row">
+                <td><div class="scanner-skeleton-bar" style="width: 62px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 52px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 44px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 38px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 40px;"></div></td>
+                <td><div class="scanner-skeleton-bar" style="width: 50px; height: 20px; border-radius: 4px;"></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 5. PORTFOLIO GUARDIAN & VALUE AT RISK (VAR) -->
+      <div class="portfolio-guardian-card glass-panel" id="portfolioGuardianCard" style="display: none; margin-top: 14px;">
+        <div class="card-title-row">
+          <div class="agents-title-group">
+            <span class="card-tag">PORTFOLIO GUARDIAN &amp; CONCENTRATION VAR</span>
+            <span class="agents-count-badge" id="portfolioStatusBadge">HEALTHY</span>
+          </div>
+          <div class="card-status-note" id="portfolioEquityNote">-- Total Net Equity</div>
+        </div>
+        
+        <!-- Summary Metrics Grid -->
+        <div class="portfolio-grid" id="portfolioGrid">
+          <div class="portfolio-metric-box">
+            <span class="pm-label">TOTAL NET EQUITY (NAV)</span>
+            <span class="pm-val" id="pmTotalVal">--</span>
+          </div>
+          <div class="portfolio-metric-box highlight-cash">
+            <span class="pm-label">TRADABLE CASH (USDT)</span>
+            <span class="pm-val" id="pmCashRatio">--</span>
+          </div>
+          <div class="portfolio-metric-box">
+            <span class="pm-label">DAILY 95% VAR</span>
+            <span class="pm-val" id="pmDailyVar">$0.00 (0.0%)</span>
+          </div>
+        </div>
+
+        <!-- All Asset Holdings Breakdown (Paper & Live) -->
+        <div class="portfolio-holdings-container" id="portfolioHoldingsContainer">
+          <div class="holdings-header-row">
+            <div class="holdings-title-group">
+              <span class="holdings-tag">ALL ASSET HOLDINGS &amp; ALLOCATIONS</span>
+              <span class="holdings-mode-badge paper" id="holdingsAccountBadge">Paper Simulation Account</span>
+            </div>
+            <div class="holdings-summary-note" id="holdingsSummaryNote">
+              Liquid Cash + Mark-to-Market Spot Assets
+            </div>
+          </div>
+          
+          <div class="holdings-table-wrap">
+            <table class="holdings-table">
+              <thead>
+                <tr>
+                  <th>ASSET / COIN</th>
+                  <th>BALANCE / HOLDINGS</th>
+                  <th>MARK PRICE</th>
+                  <th>USDT VALUE</th>
+                  <th>ALLOCATION</th>
+                  <th>TYPE</th>
+                </tr>
+              </thead>
+              <tbody id="portfolioHoldingsBody">
+                <!-- Dynamically populated by renderPortfolioAudit -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT WORKSPACE PANEL: COMMAND BAR + RESEARCH BRIEF HERO + EXECUTION BLOTTER -->
+    <aside class="hud-right-panel" id="hudRightPanel">
+      
+      <!-- HERO COMMAND BAR (Raycast / Cursor Style) -->
+      <section class="prompt-strip glass-panel" id="promptStrip">
+        <div class="prompt-strip-inner">
+          <div class="prompt-strip-input-row">
+            <svg class="prompt-strip-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input 
+              type="text" 
+              id="nlPromptInput" 
+              class="prompt-strip-input" 
+              placeholder="Describe your trade thesis in natural language… (e.g. 'Long 25 NVDA at 5x on Saturday')" 
+              value=""
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button type="button" class="prompt-strip-btn" id="btnDispatchSwarm">
+              Research Thesis <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+
+          <!-- LUI Extracted Parameter Preview Strip -->
+          <div class="lui-parameter-chips" id="luiParamChips" style="display: none;">
+            <span class="lui-chip"><span class="lc-k">Asset:</span> <strong id="luiAsset">NVDAUSDT</strong></span>
+            <span class="lui-chip"><span class="lc-k">Side:</span> <strong id="luiSide" class="buy">BUY</strong></span>
+            <span class="lui-chip"><span class="lc-k">Size:</span> <strong id="luiSize">25</strong></span>
+            <span class="lui-chip"><span class="lc-k">Leverage:</span> <strong id="luiLev">5x</strong></span>
+            <span class="lui-chip"><span class="lc-k">Session:</span> <strong id="luiSession">Weekend (2.4x Spread)</strong></span>
+          </div>
+
+          <!-- Pinned Canonical Demo Buttons -->
+          <div class="prompt-strip-examples">
+            <button class="strip-ex rtoken" onclick="window.setPrompt('Long 25 NVDA at 5x on Saturday');">
+              NVDA Weekend 5x
+            </button>
+            <button class="strip-ex danger" onclick="window.setPrompt('Lost last 3 trades, going 40x on SOL');">
+              Tilt Revenge 40x SOL
+            </button>
+            <button class="strip-ex liq" onclick="window.setPrompt('Market buy 50,000 DOGE vs book');">
+              DOGE Depth Shock
+            </button>
+            <button class="strip-ex scan" onclick="window.setPrompt('Does adding 25 NVDA increase my tech concentration?');">
+              Tech Concentration VaR
+            </button>
+          </div>
+
+          <!-- Animated Multi-Step Research Loading Bar -->
+          <div class="analysis-progress-bar" id="analysisProgressBar" style="display: none;">
+            <div class="ap-step active" id="apStep1"><span class="ap-dot"></span> 1. Deconstructing Intent</div>
+            <div class="ap-step" id="apStep2"><span class="ap-dot"></span> 2. Fetching L2 Depth</div>
+            <div class="ap-step" id="apStep3"><span class="ap-dot"></span> 3. Stress &amp; Backtest</div>
+            <div class="ap-step" id="apStep4"><span class="ap-dot"></span> 4. Formulating Safe Ticket</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Primary Research Brief Hero Card -->
+      <div class="ai-letter-card glass-panel" id="researchBriefCard">
+        <div class="ai-letter-header">
+          <div class="ai-avatar-badge">
+            <span class="avatar-title">Pre-Trade Research Brief</span>
+          </div>
+          <div class="overall-verdict-tag neutral" id="heroVerdictTag">STANDBY · AWAITING THESIS</div>
+        </div>
+
+        <!-- Sub-Segmented Navigation Control (Plan A) -->
+        <div class="brief-subnav-strip" id="briefSubnavStrip">
+          <button type="button" class="brief-subnav-btn active" id="subtabBtnExecution" onclick="window.switchBriefTab('execution');">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>1-Click Execution</span>
+          </button>
+          <button type="button" class="brief-subnav-btn" id="subtabBtnFindings" onclick="window.switchBriefTab('findings');">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>Findings &amp; Checklist</span>
+          </button>
+          <button type="button" class="brief-subnav-btn" id="subtabBtnStress" onclick="window.switchBriefTab('stress');">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Stress &amp; Telemetry</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: 1-CLICK EXECUTION (Active by default) -->
+        <div class="brief-tab-pane active" id="briefTabExecution">
+          <!-- Conversational Natural Language Body -->
+          <div class="ai-letter-body compact">
+            <h2 class="ai-letter-headline" id="heroAiHeadline">AI Pre-Trade Research Workbench</h2>
+            <div class="ai-letter-text" id="heroAiText">
+              <p>Enter a natural language trade thesis above or select a preset example. Our 7 quantitative risk engines will audit Level-2 orderbook depth, stress test tail scenarios, and formulate a calibrated execution ticket.</p>
+            </div>
+          </div>
+
+          <!-- EXECUTION ASSISTANCE DESK BLOTTER (Side-by-side Ticket Comparison) -->
+          <div class="execution-blotter-card" id="executionBlotterCard">
+            <div class="blotter-header">
+              <div class="bh-left">
+                <span class="bh-badge">EXECUTION ASSISTANT</span>
+                <span class="bh-title">Side-by-Side Order Prescription</span>
+              </div>
+              <span class="bh-note">The human always makes the final decision</span>
+            </div>
+
+            <div class="blotter-body">
+              <!-- Comparison Grid: Original vs Safe Prescription -->
+              <div class="tickets-comparison-grid">
+                <!-- Left: Original Proposed Ticket -->
+                <div class="ticket-col original" id="ticketColOriginal">
+                  <div class="ticket-col-tag">ORIGINAL PROPOSAL (UNCONSTRAINED)</div>
+                  <div class="ticket-param-row">
+                    <span class="tp-label">ACTION / ASSET</span>
+                    <span class="tp-val" id="origActionVal">—</span>
+                  </div>
+                  <div class="ticket-param-row">
+                    <span class="tp-label">LEVERAGE</span>
+                    <span class="tp-val" id="origLevVal">—</span>
+                  </div>
+                  <div class="ticket-param-row">
+                    <span class="tp-label">ORDER TYPE</span>
+                    <span class="tp-val" id="origTypeVal">—</span>
+                  </div>
+                  <div class="ticket-param-row">
+                    <span class="tp-label">EST. SLIPPAGE</span>
+                    <span class="tp-val" id="origSlipVal">—</span>
+                  </div>
+                  <div class="ticket-param-row">
+                    <span class="tp-label">LIQ BUFFER</span>
+                    <span class="tp-val" id="origBufferVal">—</span>
+                  </div>
+                  <div class="ticket-param-row">
+                    <span class="tp-label">500-RUN RUIN</span>
+                    <span class="tp-val" id="origRuinVal">—</span>
+                  </div>
+                </div>
+
+                <!-- Right: AI Prescribed Safe Ticket -->
+                <div class="ticket-col safe" id="ticketColSafe">
+                  <div class="ticket-col-tag safe-tag">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#00e676" stroke-width="3" style="display:inline-block; vertical-align: -1px; margin-right: 4px;"><polyline points="20 6 9 17 4 12"/></svg>
+                    PRESCRIBED SAFE TICKET
+                  </div>
+                  <div class="ticket-param-row">
+                    <span class="tp-label">ACTION / ASSET</span>
+                    <span class="tp-val safe" id="safeActionVal">—</span>
+                  </div>
+                  <div class="ticket-param-row">
+                    <span class="tp-label">SAFE LEVERAGE</span>
+                    <span class="tp-val safe" id="safeLevVal">—</span>
+                  </div>
+                  <div class="ticket-param-row">
+                    <span class="tp-label">EXECUTION</span>
+                    <span class="tp-val safe" id="safeExecVal">—</span>
+                  </div>
+                  <div class="ticket-param-row">
+                    <span class="tp-label">BRACKET SL</span>
+                    <span class="tp-val safe" id="safeSlVal">—</span>
+                  </div>
+                  <div class="ticket-param-row">
+                    <span class="tp-label">BRACKET TP</span>
+                    <span class="tp-val safe" id="safeTpVal">—</span>
+                  </div>
+                  <div class="ticket-param-row">
+                    <span class="tp-label">500-RUN RUIN</span>
+                    <span class="tp-val safe" id="safeRuinVal">—</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Human Decision Trio Buttons -->
+              <div class="human-decision-trio">
+                <!-- 1. Primary Recommended: Approve Safe Prescription -->
+                <button type="button" class="btn-decision approve-safe" id="btnApproveSafe" onclick="window.confirmTradeExecution('safe');" title="Approve calibrated safe ticket with risk controls">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>Approve Safe Ticket</span>
+                </button>
+
+                <!-- 2. Human Override: Override with Original -->
+                <button type="button" class="btn-decision override-orig" id="btnOverrideOrig" onclick="window.confirmTradeExecution('original');" title="Execute trader parameters unconstrained">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+                  <span>Override Original</span>
+                </button>
+
+                <!-- 3. Reject & Pass -->
+                <button type="button" class="btn-decision reject-pass" id="btnRejectPass" onclick="window.confirmTradeExecution('reject');" title="Dismiss trade and protect balance">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <span>Pass</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: FINDINGS & CHECKLIST -->
+        <div class="brief-tab-pane" id="briefTabFindings">
+          <!-- Structured Research Takeaways -->
+          <div class="research-takeaways-container" id="heroTakeawaysBox">
+            <div class="takeaways-header-row">
+              <span class="takeaways-title">Structured Research Findings</span>
+            </div>
+
+            <div class="takeaways-section">
+              <div class="finding-row" id="findingRow1">
+                <span class="finding-num">1</span>
+                <div class="finding-content">
+                  <span id="findingText1">Bitget Level-2 orderbook depth and slippage simulation ready.</span>
+                </div>
+              </div>
+              <div class="finding-row" id="findingRow2">
+                <span class="finding-num">2</span>
+                <div class="finding-content">
+                  <span id="findingText2">Crisis stress testing (Fed Shock, Flash Crash, Monday Cash Open Gap) ready.</span>
+                </div>
+              </div>
+              <div class="finding-row" id="findingRow3">
+                <span class="finding-num">3</span>
+                <div class="finding-content">
+                  <span id="findingText3">7×24 rToken session regime and Monte Carlo ruin risk analyzer ready.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 1 Recommended Action + 1 Thing NOT To Do Box -->
+            <div class="action-not-do-grid">
+              <div class="action-box">
+                <div class="an-badge rec">✓ RECOMMENDED ACTION</div>
+                <div class="an-text" id="recActionText">Enter a trade prompt above or click one of the quick presets to generate an institutional pre-trade research brief.</div>
+              </div>
+              <div class="not-do-box">
+                <div class="an-badge not-do">✕ THING NOT TO DO</div>
+                <div class="an-text" id="thingNotToDoText">Do not submit un-researched market orders without inspecting session spread regime and orderbook liquidity.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Human Pre-Flight Checklist -->
+          <div class="human-checklist-card" id="humanChecklistCard">
+            <div class="checklist-header">
+              <span class="cl-title">HUMAN PRE-FLIGHT CHECKLIST</span>
+              <span class="cl-subtitle">Verification before trade confirmation</span>
+            </div>
+            <div class="checklist-items" id="checklistItemsList">
+              <label class="cl-item">
+                <input type="checkbox" id="chkMondayGap" checked/>
+                <span class="cl-text" id="chkText1">Acknowledge session regime and liquidity depth.</span>
+              </label>
+              <label class="cl-item">
+                <input type="checkbox" id="chkStopLoss" checked/>
+                <span class="cl-text" id="chkText2">Verify bracket Stop-Loss is active.</span>
+              </label>
+              <label class="cl-item">
+                <input type="checkbox" id="chkSizing" checked/>
+                <span class="cl-text" id="chkText3">Confirm trade notional is within account risk allocation.</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Export & Copy Toolbar -->
+          <div class="research-export-toolbar">
+            <button class="btn-export-brief" id="btnExportBrief" onclick="window.downloadResearchBrief();" title="Download formatted Markdown Research Brief">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Export Research Brief (.md)</span>
+            </button>
+            <button class="btn-copy-brief" id="btnCopyBrief" onclick="window.copyResearchBrief();" title="Copy briefing text to clipboard">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span>Copy Brief</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 3: STRESS & TELEMETRY -->
+        <div class="brief-tab-pane" id="briefTabStress">
+          <!-- Pre-Trade Historical Crisis Stress Testing Drawer -->
+          <div class="stress-test-container expanded" id="stressTestContainer">
+            <div class="stress-test-header" onclick="window.toggleStressDrawer();">
+              <div class="st-header-left">
+                <span class="st-title">CRISIS STRESS TEST &amp; RESILIENCE</span>
+                <div class="resilience-meter" id="stressResilienceMeter" title="4/4 Resilience Segments Passed">
+                  <span class="res-seg active"></span>
+                  <span class="res-seg active"></span>
+                  <span class="res-seg warn"></span>
+                  <span class="res-seg active"></span>
+                </div>
+                <span class="st-badge caution" id="stressResilienceBadge">MODERATE (3/4)</span>
+              </div>
+              <div class="st-header-right">
+                <span class="st-buffer-pill" id="stressBufferPill">Buffer: 18.5% to Liq</span>
+                <span class="st-chevron" id="stressChevron">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="stress-test-body" id="stressTestBody">
+              <div class="stress-test-grid" id="stressTestGrid">
+                <!-- Populated dynamically by app.js -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Micro ReAct Agent Trace Drawer -->
+          <div class="micro-react-container expanded" id="reactTraceCard">
+            <div class="micro-react-header" onclick="window.toggleReactDrawer();">
+              <div class="mr-header-left">
+                <span class="mr-title">COPILOT TELEMETRY TRACE</span>
+                <span class="mr-badge" id="reactStepBadge">Ready</span>
+              </div>
+              <div class="mr-header-right">
+                <span class="mr-latency" id="reactLatencyNote">Live Stream</span>
+                <span class="mr-chevron" id="reactChevron">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="micro-react-body" id="reactTraceBody">
+              <div class="trace-stream-list" id="reactTraceList">
+                <div class="trace-step-card">
+                  <div class="trace-step-header">
+                    <div class="trace-step-left">
+                      <span class="trace-badge thought">RESEARCH</span>
+                      <span class="trace-title">Desk Initialized</span>
+                    </div>
+                    <span class="trace-time">+0.0ms</span>
+                  </div>
+                  <div class="trace-content">Ready to audit trade directives with 7 quant engines and live Bitget orderbook telemetry.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- BITGET AGENTIC ACCOUNT OAUTH & SECURITY VAULT MODAL -->
+  <div class="hud-modal-backdrop" id="oauthModalBackdrop" style="display: none;" onclick="window.handleModalBackdropClick(event);">
+    <div class="hud-modal-card glass-panel" id="oauthModalCard" onclick="event.stopPropagation();">
+      <!-- Modal Header -->
+      <div class="hud-modal-header">
+        <div class="hmh-left">
+          <span class="hmh-icon">⚡</span>
+          <div>
+            <h2 class="hmh-title">Bitget Agentic Account OAuth</h2>
+            <p class="hmh-subtitle">Official Token-Free Handshake · Hardware AES-GCM Encrypted</p>
+          </div>
+        </div>
+        <button class="hmh-close-btn" onclick="window.closeOAuthModal();" title="Close">✕</button>
+      </div>
+
+      <!-- Security Guarantee Banner -->
+      <div class="oauth-security-banner">
+        <div class="osb-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          ZERO PLAINTEXT STORAGE
+        </div>
+        <span class="osb-text">Credentials are encrypted client-side using <strong>AES-GCM (256-bit)</strong> before writing to browser storage. Plaintext keys never touch disk storage.</span>
+      </div>
+
+      <!-- Modal Body (Dynamic Views) -->
+      <div class="hud-modal-body">
+        <!-- View 1: Disconnected / Initial State -->
+        <div class="oauth-view" id="oauthViewConnect">
+          <div class="oauth-explainer">
+            <div class="oe-row">
+              <span class="oe-num">1</span>
+              <div>
+                <strong>Isolated Agentic Subaccount</strong>
+                <p>Bitget isolates trading funds in a dedicated agent account to mitigate risk and prevent unauthorized drawdown.</p>
+              </div>
+            </div>
+            <div class="oe-row">
+              <span class="oe-num">2</span>
+              <div>
+                <strong>Zero Manual API Keys</strong>
+                <p>No pasting keys or passphrases. Browser OAuth automatically generates and negotiates credentials via RSA-2048 handshake.</p>
+              </div>
+            </div>
+            <div class="oe-row">
+              <span class="oe-num">3</span>
+              <div>
+                <strong>Client-Side Encrypted Vault</strong>
+                <p>Stored securely inside your browser's encrypted vault. Synced directly to Alphaind's live execution layer.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Encryption Settings Toggle -->
+          <div class="vault-security-options">
+            <div class="vso-header">
+              <label class="vso-label">Storage Protection Mode</label>
+              <span class="vso-rec">Recommended</span>
+            </div>
+            <div class="vso-selector">
+              <label class="vso-radio-opt">
+                <input type="radio" name="vaultMode" value="device" id="vaultModeDevice" checked onchange="window.toggleVaultPinInput();">
+                <span><strong>Device Vault (One-Click)</strong><br><small>Hardware-tied 256-bit AES-GCM browser key</small></span>
+              </label>
+              <label class="vso-radio-opt">
+                <input type="radio" name="vaultMode" value="pin" id="vaultModePin" onchange="window.toggleVaultPinInput();">
+                <span><strong>Master PIN (High Security)</strong><br><small>Derived via PBKDF2 (100,000 rounds SHA-256)</small></span>
+              </label>
+            </div>
+            <div class="vso-pin-box" id="vaultPinBox" style="display: none;">
+              <input type="password" id="vaultPinInput" class="vault-input" placeholder="Create a 4-8 digit vault PIN..." maxlength="16">
+              <small class="vso-hint">You will enter this PIN each time you unlock your desk.</small>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="oauth-modal-actions">
+            <button class="btn-oauth-primary" id="btnLaunchOAuth" onclick="window.launchBitgetOAuth();">
+              <span>⚡ Launch Bitget OAuth in Browser</span>
+            </button>
+            <button class="btn-oauth-secondary" id="btnSimulateOAuth" onclick="window.launchSimulatedOAuth();" title="Test full RSA roundtrip and encrypted vault without funded live account">
+              <span>🧪 Test Simulated OAuth Grant</span>
+            </button>
+          </div>
+
+          <!-- Alternative Manual / Callback Link -->
+          <div class="oauth-manual-fallback">
+            <button class="text-btn" onclick="window.toggleManualDataKeyInput();">Have a redirect dataKey or mirror domain? Click here ›</button>
+            <div class="manual-datakey-box" id="manualDataKeyBox" style="display: none;">
+              <input type="text" id="manualDataKeyInput" class="vault-input" placeholder="Paste dataKey from URL...">
+              <button class="btn-oauth-small" onclick="window.submitManualDataKey();">Exchange</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- View 2: Awaiting Authorization Flow -->
+        <div class="oauth-view" id="oauthViewWaiting" style="display: none;">
+          <div class="waiting-flow-container">
+            <div class="radar-pulse-box">
+              <div class="radar-spinner"></div>
+              <span class="radar-icon">⚡</span>
+            </div>
+            <h3 class="waiting-title">Awaiting Bitget Authorization...</h3>
+            <p class="waiting-desc">A browser window has opened for you to approve your Agentic Subaccount connection.</p>
+            <div class="waiting-meta-box">
+              <div class="wmb-item">
+                <span class="wmb-label">Session ID:</span>
+                <span class="wmb-val" id="oauthSessionIdDisplay">...</span>
+              </div>
+              <div class="wmb-item">
+                <span class="wmb-label">Ephemeral Callback:</span>
+                <span class="wmb-val" id="oauthPortDisplay">127.0.0.1:0</span>
+              </div>
+              <div class="wmb-item">
+                <span class="wmb-label">Security:</span>
+                <span class="wmb-val highlight">RSA 2048-Bit Ephemeral Keypair</span>
+              </div>
+            </div>
+            <div class="waiting-actions">
+              <button class="btn-oauth-secondary" onclick="window.cancelOAuthSession();">Cancel</button>
+              <a class="btn-oauth-secondary" id="reopenAuthLink" href="#" target="_blank">Reopen Auth Tab ↗</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- View 3: Connected & Active -->
+        <div class="oauth-view" id="oauthViewConnected" style="display: none;">
+          <div class="connected-badge-row">
+            <div class="conn-dot-pulsing"></div>
+            <div>
+              <h3 class="conn-title">Agentic Subaccount Connected</h3>
+              <p class="conn-subtitle">Encrypted in browser storage · Live Desk Ready</p>
+            </div>
+          </div>
+
+          <div class="account-spec-table">
+            <div class="ast-row">
+              <span class="ast-label">Agent User ID:</span>
+              <span class="ast-val" id="connectedUserId">bg_agent_...</span>
+            </div>
+            <div class="ast-row">
+              <span class="ast-label">Masked API Key:</span>
+              <span class="ast-val code-font" id="connectedMaskedKey">bg_live_...</span>
+            </div>
+            <div class="ast-row">
+              <span class="ast-label">Cipher Engine:</span>
+              <span class="ast-val highlight">AES-GCM (256-bit) WebCrypto</span>
+            </div>
+            <div class="ast-row">
+              <span class="ast-label">Desk Mode:</span>
+              <span class="ast-val" id="connectedDeskMode">Bitget Live Agentic Account</span>
+            </div>
+            <div class="ast-row">
+              <span class="ast-label">Connected At:</span>
+              <span class="ast-val" id="connectedTimestamp">Just now</span>
+            </div>
+          </div>
+
+          <div class="connected-actions">
+            <button class="btn-oauth-primary" onclick="window.syncVaultToDesk();">
+              <span>↻ Re-sync Balance &amp; Keys</span>
+            </button>
+            <button class="btn-oauth-secondary" onclick="window.lockVault();">
+              <span>🔒 Lock Vault</span>
+            </button>
+            <button class="btn-oauth-danger" onclick="window.disconnectAndWipe();">
+              <span>✕ Disconnect &amp; Wipe Storage</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- View 4: Locked Vault (Requires PIN/Unlock) -->
+        <div class="oauth-view" id="oauthViewLocked" style="display: none;">
+          <div class="locked-container">
+            <div class="locked-icon">🔒</div>
+            <h3 class="conn-title">Agentic Vault Locked</h3>
+            <p class="conn-subtitle">An encrypted credential vault exists in this browser. Unlock with your master PIN.</p>
+            <div class="unlock-box">
+              <input type="password" id="unlockPinInput" class="vault-input" placeholder="Enter your vault PIN..." maxlength="16">
+              <button class="btn-oauth-primary" onclick="window.unlockSavedVault();">Unlock Vault</button>
+            </div>
+            <button class="text-btn danger" onclick="window.disconnectAndWipe();">Wipe Vault &amp; Start Over</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js?v=4.4"></script>
+  <script src="js/dialog.js?v=4.6"></script>
+  <script src="js/crypto-vault.js?v=4.4"></script>
+  <script src="js/app.js?v=4.4"></script>
+</body>
+</html>

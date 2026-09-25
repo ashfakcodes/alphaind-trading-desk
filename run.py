@@ -61,9 +61,9 @@ def serve_ui():
     landing_file = static_dir / "landing.html"
     if landing_file.exists():
         return FileResponse(landing_file)
-    desk_file = static_dir / "index.html"
-    if desk_file.exists():
-        return FileResponse(desk_file)
+    index_file = static_dir / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
     return {
         "message": "Alphaind - AI Trading Desk API is active. Open /docs for Swagger interactive endpoints.",
         "version": "1.0.0",
@@ -73,11 +73,13 @@ def serve_ui():
 
 @app.get("/desk")
 @app.get("/desk.html")
-@app.get("/index.html")
 def serve_desk():
-    desk_file = static_dir / "index.html"
+    desk_file = static_dir / "desk.html"
     if desk_file.exists():
         return FileResponse(desk_file)
+    index_file = static_dir / "index.html"
+    if index_file.exists():
+        return FileResponse(index_file)
     return {"message": "Trading Desk page not found"}
 
 @app.get("/auth")
