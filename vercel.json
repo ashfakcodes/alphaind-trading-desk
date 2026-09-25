@@ -1,4 +1,5 @@
 {
+  "outputDirectory": "frontend",
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
@@ -18,12 +19,8 @@
     }
   ],
   "rewrites": [
-    { "source": "/", "destination": "/frontend/index.html" },
-    { "source": "/landing", "destination": "/frontend/index.html" },
-    { "source": "/desk", "destination": "/frontend/desk.html" },
-    { "source": "/auth", "destination": "/frontend/auth.html" },
-    { "source": "/css/:path*", "destination": "/frontend/css/:path*" },
-    { "source": "/js/:path*", "destination": "/frontend/js/:path*" },
-    { "source": "/src/:path*", "destination": "/frontend/src/:path*" }
+    { "source": "/landing", "destination": "/index.html" },
+    { "source": "/desk", "destination": "/desk.html" },
+    { "source": "/auth", "destination": "/auth.html" }
   ]
 }
