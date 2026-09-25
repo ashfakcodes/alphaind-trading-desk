@@ -39,10 +39,8 @@ def root_health():
         "primary_model": settings.BITGET_QWEN_MODEL
     }
 
-# Mount Static Files (if local monolithic mode is active)
+# Mount Frontend Static Assets
 static_dir = Path(__file__).resolve().parent / "frontend"
-if not static_dir.exists():
-    static_dir = Path(__file__).resolve().parent / "app" / "static"
 
 if static_dir.exists():
     app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")

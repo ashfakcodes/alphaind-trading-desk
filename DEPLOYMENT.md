@@ -16,8 +16,7 @@ This guide details the streamlined deployment of **Alphaind - AI Trading Desk** 
 │                    BACKEND SERVICE                     │
 │  Host: Render (https://alphaind-backend.onrender.com)  │
 │  - FastAPI + Uvicorn ASGI Server                       │
-│  - 7 Risk & Defense Pillars + Multi-Agent Orchestrator │
-│  - Dual LLM: OpenRouter (Primary) + Bitget Qwen (Backup│
+│  - Single Active LLM with Auto-Failover (OpenRouter -> Qwen) │
 │  - Live Bitget v2 REST Market Data (Cached 3s)         │
 │  - Health Check Probes (/health & /api/health)         │
 └────────────────────────────────────────────────────────┘
@@ -77,10 +76,9 @@ This guide details the streamlined deployment of **Alphaind - AI Trading Desk** 
 
 ---
 
-## 💻 Local Running Scripts
-
-* **Full Monolithic Application (Backend + UI on `:8000`)**:
-  * `python run.py`
-* **Decoupled Architecture (Microservices)**:
-  * **Backend API (`:8000`)**: `python run.py` (or `./run_backend.sh` on Linux/macOS)
-  * **Frontend Web App (`:3000`)**: `python -m http.server 3000 --directory frontend` (or `./run_frontend.sh` on Linux/macOS)
+## 💻 Local Running
+To launch the desk locally with the full UI and API active:
+```bash
+python run.py
+```
+> Access the desk at `http://localhost:8000`.
