@@ -55,9 +55,7 @@ body.obsidian-hud {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ------------------------------------------------------------- */
-/* Background Grid & Ambient Spotlight */
-/* ------------------------------------------------------------- */
+
 .grid-backdrop {
   position: fixed;
   inset: 0;
@@ -2840,9 +2838,6 @@ body.obsidian-hud {
   }
 }
 
-/* ============================================================= */
-/* TRACK 3 AI TRADING DESK ENHANCEMENTS                          */
-/* ============================================================= */
 
 /* Topbar Center Indicators */
 .topbar-center-indicators {
@@ -3826,7 +3821,7 @@ body.obsidian-hud {
 }
 
 /* ------------------------------------------------------------- */
-/* Brief Sub-Segmented Navigation Control (Plan A)                */
+/* Brief Sub-Segmented Navigation Control                        */
 /* ------------------------------------------------------------- */
 .brief-subnav-strip {
   display: flex;
@@ -4603,9 +4598,7 @@ body.obsidian-hud {
   color: #fb7185;
 }
 
-/* ------------------------------------------------------------- */
-/* Dedicated Bitget OAuth Page Styles                            */
-/* ------------------------------------------------------------- */
+
 body.auth-page {
   min-height: 100vh;
   display: flex;
@@ -4997,9 +4990,6 @@ body.auth-page {
   background: #059669;
 }
 
-/* ============================================================= */
-/* MINIMAL SOLID #1993F8 COOKIE & STORAGE POPUP BANNER          */
-/* ============================================================= */
 .cookie-banner-solid {
   position: fixed;
   bottom: 20px;
@@ -5115,6 +5105,982 @@ body.auth-page {
     text-align: center;
   }
 }
+
+/* ============================================================= */
+/* COMPREHENSIVE RESPONSIVE DESK LAYOUT SYSTEM                   */
+/* ============================================================= */
+
+/* ------------------------------------------------------------- */
+/* 1. TABLET & MEDIUM SCREENS (<= 1080px)                        */
+/* ------------------------------------------------------------- */
+@media (max-width: 1080px) {
+  .hud-topbar {
+    padding: 10px 18px;
+  }
+
+  .topbar-center-indicators {
+    position: static;
+    transform: none;
+    margin: 0 auto;
+  }
+
+  .rtoken-weekend-banner {
+    margin: 10px 18px 0 18px;
+  }
+
+  .hud-main {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 18px 40px 18px;
+    gap: 16px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .hud-right-panel {
+    order: 1; /* Command input and research brief first */
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .hud-left-column {
+    order: 2; /* 7 engines and scanner/debate/portfolio below */
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .agentic-mode-strip {
+    padding: 8px 18px;
+  }
+
+  .segmented-control {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+  }
+
+  .agentic-mode-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
+  }
+}
+
+/* ------------------------------------------------------------- */
+/* 2. TABLET PORTRAIT & PHABLETS (<= 860px)                      */
+/* ------------------------------------------------------------- */
+@media (max-width: 860px) {
+  .topbar-center-indicators {
+    display: none; /* Hide center ET clock to avoid crowding */
+  }
+
+  .hud-topbar {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+
+  .brand-titles .brand-tagline {
+    display: none;
+  }
+
+  .brand-titles .brand-name {
+    font-size: 14.5px;
+  }
+
+  .rtoken-weekend-banner {
+    margin: 10px 14px 0 14px;
+    padding: 10px 12px;
+    font-size: 11.5px;
+  }
+
+  .hud-main {
+    padding: 10px 14px 40px 14px;
+    gap: 14px;
+  }
+
+  .agentic-mode-strip {
+    padding: 6px 14px;
+  }
+}
+
+/* ------------------------------------------------------------- */
+/* 3. MOBILE DEVICES (<= 680px)                                  */
+/* ------------------------------------------------------------- */
+@media (max-width: 680px) {
+  /* Topbar Fluid Layout */
+  .hud-topbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+  }
+
+  .brand-logo {
+    width: 26px;
+    height: 26px;
+    padding: 2px;
+    border-radius: 6px;
+  }
+
+  .brand-titles .brand-name {
+    font-size: 13.5px;
+  }
+
+  .topbar-user {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .topbar-auth-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .topbar-mode-toggle {
+    padding: 2px;
+    gap: 2px;
+    border-radius: 16px;
+  }
+
+  .tmt-btn {
+    padding: 3px 7px;
+    font-size: 9.5px;
+    height: 26px;
+    gap: 4px;
+  }
+
+  .tmt-dot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .oauth-connect-btn {
+    padding: 3px 8px;
+    font-size: 9.5px;
+    height: 26px;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .user-balance {
+    padding: 2px 6px;
+    min-width: auto;
+    border-radius: 4px;
+  }
+
+  .ub-label {
+    font-size: 7.5px;
+    letter-spacing: 0.3px;
+  }
+
+  .ub-val {
+    font-size: 11.5px;
+  }
+
+  .ub-sub {
+    display: none; /* Hide margin footnote on mobile */
+  }
+
+  /* Segmented Mode Strip */
+  .agentic-mode-strip {
+    padding: 6px 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .segmented-control {
+    width: 100%;
+    display: flex;
+    gap: 3px;
+    padding: 3px;
+    border-radius: 8px;
+  }
+
+  .agentic-mode-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 6px 4px;
+    font-size: 10.5px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Main Workspace */
+  .hud-main {
+    padding: 8px 10px 36px 10px;
+    gap: 12px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .rtoken-weekend-banner {
+    margin: 8px 10px 0 10px;
+    padding: 8px 10px;
+    font-size: 11px;
+    gap: 8px;
+  }
+
+  /* Command Prompt Strip */
+  .prompt-strip {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .prompt-strip-inner {
+    padding: 8px;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .prompt-strip-input-row {
+    padding: 4px 6px 4px 10px;
+    gap: 6px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .prompt-strip-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  .prompt-strip-input {
+    font-size: 11.5px;
+    min-width: 0;
+    flex: 1;
+    padding: 4px 0;
+  }
+
+  .prompt-strip-btn {
+    padding: 5px 8px;
+    font-size: 10.5px;
+    height: 30px;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .lui-parameter-chips {
+    gap: 4px;
+    margin-top: 4px;
+    width: 100%;
+  }
+
+  .lui-chip {
+    font-size: 9.5px;
+    padding: 2px 6px;
+  }
+
+  .prompt-strip-examples {
+    gap: 5px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    padding-bottom: 2px;
+  }
+
+  .prompt-strip-examples::-webkit-scrollbar {
+    display: none;
+  }
+
+  .strip-ex {
+    flex-shrink: 0;
+    font-size: 9.5px;
+    padding: 3px 8px;
+    white-space: nowrap;
+  }
+
+  .analysis-progress-bar {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    padding: 6px 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .ap-step {
+    font-size: 9.5px;
+    gap: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Research Brief Hero Card */
+  .ai-letter-card {
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .ai-letter-header {
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .avatar-title {
+    font-size: 12.5px;
+  }
+
+  .overall-verdict-tag {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+
+  .brief-subnav-strip {
+    display: flex;
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    gap: 4px;
+    padding: 2px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+  }
+
+  .brief-subnav-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .brief-subnav-btn {
+    flex: 1 0 auto;
+    padding: 5px 8px;
+    font-size: 10px;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .ai-letter-body.compact {
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+
+  .ai-letter-headline {
+    font-size: 13.5px;
+  }
+
+  .ai-letter-text {
+    font-size: 11.5px;
+    line-height: 1.45;
+  }
+
+  /* Execution Blotter Card & Side-by-Side Comparison */
+  .execution-blotter-card {
+    padding: 8px;
+    margin-top: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .blotter-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .bh-left {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .bh-title {
+    font-size: 11px;
+  }
+
+  .bh-note {
+    font-size: 8.5px;
+  }
+
+  .tickets-comparison-grid {
+    grid-template-columns: 1fr; /* Stack original & safe tickets vertically */
+    gap: 8px;
+    margin-bottom: 8px;
+    width: 100%;
+  }
+
+  .ticket-col {
+    padding: 8px 10px;
+    gap: 5px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .ticket-col-tag {
+    font-size: 8px;
+    margin-bottom: 3px;
+  }
+
+  .ticket-param-row {
+    font-size: 10.5px;
+  }
+
+  .tp-label {
+    font-size: 9px;
+  }
+
+  /* Human Decision Trio */
+  .human-decision-trio {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  .btn-decision {
+    width: 100%;
+    height: 36px;
+    padding: 0 10px;
+    font-size: 11.5px;
+    justify-content: center;
+  }
+
+  .btn-decision.approve-safe {
+    order: 1;
+    font-weight: 700;
+  }
+
+  .btn-decision.override-orig {
+    order: 2;
+  }
+
+  .btn-decision.reject-pass {
+    order: 3;
+  }
+
+  /* Structured Findings Tab */
+  .research-takeaways-container {
+    padding: 8px 10px;
+  }
+
+  .takeaways-title {
+    font-size: 10.5px;
+  }
+
+  .finding-row {
+    font-size: 11px;
+    gap: 6px;
+  }
+
+  .finding-num {
+    width: 16px;
+    height: 16px;
+    font-size: 9px;
+  }
+
+  .action-not-do-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  .human-checklist-card {
+    padding: 8px 10px;
+    margin-top: 8px;
+  }
+
+  .cl-title {
+    font-size: 10.5px;
+  }
+
+  .cl-subtitle {
+    font-size: 9px;
+  }
+
+  .cl-text {
+    font-size: 10.5px;
+  }
+
+  .research-export-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+    width: 100%;
+  }
+
+  .btn-export-brief, .btn-copy-brief {
+    width: 100%;
+    justify-content: center;
+    height: 34px;
+    font-size: 10.5px;
+  }
+
+  /* Stress Test & Micro ReAct Drawers */
+  .stress-test-header, .micro-react-header {
+    padding: 7px 9px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .st-header-left, .st-header-right, .mr-header-left, .mr-header-right {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .st-title, .mr-title {
+    font-size: 9px;
+  }
+
+  .st-badge, .mr-badge {
+    font-size: 8px;
+    padding: 1px 5px;
+  }
+
+  .st-buffer-pill {
+    font-size: 8px;
+    padding: 2px 5px;
+  }
+
+  .stress-test-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .micro-react-body {
+    padding: 8px;
+  }
+
+  .trace-step-card {
+    padding: 6px 8px;
+  }
+
+  .trace-content {
+    font-size: 10px;
+  }
+
+  /* 7 Alpha Engines Accordion */
+  .agents-overview-card {
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .card-title-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .card-tag {
+    font-size: 9.5px;
+  }
+
+  .agents-count-badge {
+    font-size: 8px;
+    padding: 2px 5px;
+  }
+
+  .agent-accordion-header {
+    padding: 7px 9px;
+    gap: 6px;
+  }
+
+  .accordion-left {
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .agent-icon-badge {
+    width: 18px;
+    height: 18px;
+  }
+
+  .agent-name {
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    max-width: 130px;
+  }
+
+  .agent-role {
+    font-size: 8px;
+    display: block;
+  }
+
+  .accordion-right {
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .agent-pill {
+    font-size: 8px;
+    padding: 2px 5px;
+  }
+
+  .agent-accordion-body {
+    padding: 8px 10px;
+  }
+
+  .agent-plain-result {
+    font-size: 10.5px;
+    line-height: 1.4;
+  }
+
+  .depth-walk-metrics-grid, .agent-backtest-metrics-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    margin: 6px 0;
+  }
+
+  .dwm-box, .abm-box {
+    padding: 5px 7px;
+  }
+
+  .dwm-label, .abm-label {
+    font-size: 8px;
+  }
+
+  .dwm-val, .abm-val {
+    font-size: 11px;
+  }
+
+  .agent-thought-box {
+    padding: 6px 8px;
+  }
+
+  .subagent-thoughts-list {
+    font-size: 9px;
+  }
+
+  /* Watchlist Scanner */
+  .market-scanner-card {
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .scanner-filter-group {
+    gap: 3px;
+  }
+
+  .btn-scan-filter {
+    padding: 3px 6px;
+    font-size: 9.5px;
+  }
+
+  .scanner-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 6px;
+    border-radius: 6px;
+  }
+
+  .scanner-table {
+    min-width: 440px;
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .scanner-table th, .scanner-table td {
+    padding: 6px 8px;
+    font-size: 10.5px;
+    white-space: nowrap;
+  }
+
+  /* Swarm Deliberation Arena */
+  .debate-arena-card {
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .card-status-note {
+    font-size: 9.5px;
+  }
+
+  .debate-thesis-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .dth-left {
+    width: 100%;
+    gap: 3px;
+  }
+
+  .dth-tag {
+    font-size: 8.5px;
+  }
+
+  .dth-thesis-quote {
+    font-size: 10.5px;
+    word-break: break-word;
+  }
+
+  .dth-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .dth-param-pill {
+    font-size: 9.5px;
+    padding: 2px 6px;
+  }
+
+  .deliberation-dialogue-list {
+    max-height: 360px;
+    padding: 6px 0;
+  }
+
+  .dialogue-turn {
+    padding: 6px 8px;
+    gap: 6px;
+  }
+
+  .dt-speaker-name {
+    font-size: 10.5px;
+  }
+
+  .dt-speaker-role {
+    font-size: 8.5px;
+  }
+
+  .dt-bubble {
+    font-size: 10.5px;
+    line-height: 1.4;
+  }
+
+  /* Portfolio Guardian & Holdings */
+  .portfolio-guardian-card {
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .portfolio-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .portfolio-metric-box {
+    padding: 8px 10px;
+  }
+
+  .pm-label {
+    font-size: 8.5px;
+  }
+
+  .pm-val {
+    font-size: 13.5px;
+  }
+
+  .holdings-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .holdings-tag {
+    font-size: 9px;
+  }
+
+  .holdings-mode-badge {
+    font-size: 8px;
+    padding: 1px 5px;
+  }
+
+  .holdings-summary-note {
+    font-size: 8.5px;
+  }
+
+  .holdings-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 6px;
+    border-radius: 6px;
+  }
+
+  .holdings-table {
+    min-width: 500px;
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .holdings-table th, .holdings-table td {
+    padding: 6px 8px;
+    font-size: 10.5px;
+    white-space: nowrap;
+  }
+
+  /* OAuth Vault Modal Responsive */
+  .hud-modal-backdrop {
+    padding: 8px;
+  }
+
+  .hud-modal-card {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100vh - 16px);
+    padding: 12px;
+    margin: 8px auto;
+  }
+
+  .hmh-title {
+    font-size: 13.5px;
+  }
+
+  .hmh-subtitle {
+    font-size: 9.5px;
+  }
+
+  .oauth-security-banner {
+    padding: 7px 9px;
+    font-size: 10px;
+  }
+
+  .oe-row {
+    gap: 8px;
+    font-size: 11px;
+  }
+
+  .vso-selector {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .oauth-modal-actions, .connected-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .btn-oauth-primary, .btn-oauth-secondary, .btn-oauth-danger {
+    width: 100%;
+    justify-content: center;
+    height: 36px;
+    font-size: 11px;
+  }
+}
+
+/* ------------------------------------------------------------- */
+/* 4. COMPACT MOBILE (<= 480px)                                  */
+/* ------------------------------------------------------------- */
+@media (max-width: 480px) {
+  /* 2-Row Grid Header for Ultra-Clean Layout */
+  .hud-topbar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "brand balance"
+      "controls controls";
+    gap: 6px;
+    padding: 6px 10px;
+  }
+
+  .topbar-brand {
+    grid-area: brand;
+    align-self: center;
+  }
+
+  .user-balance {
+    grid-area: balance;
+    align-self: center;
+    text-align: right;
+  }
+
+  .topbar-user {
+    grid-area: controls;
+    display: contents;
+  }
+
+  .topbar-auth-group {
+    grid-area: controls;
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  .topbar-mode-toggle {
+    flex: 1;
+    display: flex;
+  }
+
+  .tmt-btn {
+    flex: 1;
+    justify-content: center;
+    text-align: center;
+    padding: 3px 4px;
+    font-size: 9.5px;
+  }
+
+  .oauth-connect-btn {
+    flex: 0 0 auto;
+    padding: 3px 8px;
+    font-size: 9.5px;
+  }
+
+  .agent-name {
+    max-width: 100px;
+  }
+}
+
+/* ------------------------------------------------------------- */
+/* 5. SMALL MOBILE (<= 360px)                                    */
+/* ------------------------------------------------------------- */
+@media (max-width: 360px) {
+  .brand-titles .brand-name {
+    font-size: 12.5px;
+  }
+
+  .agentic-mode-btn {
+    font-size: 9.5px;
+    padding: 5px 2px;
+  }
+
+  .prompt-strip-btn span {
+    display: none;
+  }
+
+  .tmt-btn span:not(.tmt-dot) {
+    font-size: 8.5px;
+  }
+}
+
 
 
 
